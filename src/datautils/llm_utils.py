@@ -23,6 +23,14 @@ class CompletionOutputV2(CompletionOutput):
         }
 
 class RequestOutputV2(RequestOutput):
+    def from_v1_object(cls, v1_obj):
+        return cls(
+            request_id=v1_obj.request_id,
+            prompt=v1_obj.prompt,
+            prompt_token_ids=v1_obj.prompt_token_ids,
+            outputs=v1_obj.outputs,
+        )
+
     def to_json(self) -> str:
         return {
             "request_id": self.request_id,
