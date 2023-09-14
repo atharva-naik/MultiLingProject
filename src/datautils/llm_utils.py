@@ -30,7 +30,7 @@ class RequestOutputV2(RequestOutput):
             prompt=v1_obj.prompt,
             prompt_token_ids=v1_obj.prompt_token_ids,
             outputs=v1_obj.outputs,
-            finished = v1_obj.finished
+            finished = v1_obj.finished,
         )
 
     def to_json(self) -> str:
