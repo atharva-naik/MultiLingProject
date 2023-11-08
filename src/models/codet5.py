@@ -126,6 +126,22 @@ def eval(args):
     elif args.task == "code_x_glue_tt_text_to_text":
         code_bleu_score = 0
         accuracy = 0
+    elif args.task == "code_x_glue_ct_code_to_text":
+        if args.src == "en": # code generation
+            lang = args.tgt
+            code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
+            accuracy = exact_match_accuracy(refs=label_str, preds=pred_str)
+        else: # code summarization
+            code_bleu_score = 0
+            accuracy = 0
+    elif args.task == "neulab/conala": # code generation and summarization.
+        if args.src == "en": # code generation
+            lang = "python"
+            code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
+            accuracy = exact_match_accuracy(refs=label_str, preds=pred_str)
+        else: # code summarization
+            code_bleu_score = 0
+            accuracy = 0
 
     print(f'BLEU score: {100*bleu_score["bleu"]:.2f}')
     print(f'CodeBLEU score: {100*code_bleu_score:.2f}')
@@ -201,6 +217,7 @@ if __name__ == "__main__":
         input_key = args.src
         target_key = args.tgt
         dataset = load_dataset(args.task)
+
     elif args.task == "code_x_glue_tt_text_to_text":
         if args.tgt == "en":
             input_key = "source"
@@ -211,6 +228,34 @@ if __name__ == "__main__":
             target_key = "source"
             subset =  f"{args.tgt}_{args.src}"
         dataset = load_dataset(args.task, subset)
+
+    elif args.task == "neulab/conala":
+        if args.src == "en": # code generation.
+            input_key = "intent"
+            target_key = "snippet"
+        elif args.tgt == "en": # code summarization.
+            input_key = "snippet"
+            target_key = "intent"
+        subset = "curated"
+        # split train to get validation (10% of the train dataset)
+        dataset = load_dataset(args.task, subset, split=["train[:90%]", "train[90%:]", "test"])
+        dataset = {
+            "train": dataset[0],
+            "validation": dataset[1],
+            "test": dataset[2]
+        }
+    
+    elif args.task == "code_x_glue_ct_code_to_text":
+        if args.src == "en": # code generation.
+            input_key = "docstring"
+            target_key = "code"
+            subset = args.tgt
+        elif args.tgt == "en": # code summarization.
+            input_key = "code"
+            target_key = "docstring"
+            subset = args.src
+        dataset = load_dataset(args.task, subset)
+
     LOG_FILE_PATH = os.path.join(args.output_dir, "train_logs.jsonl")
     # interesting models:
     # 1. Salesforce/codet5-base-multi-sum (base)
@@ -218,7 +263,10 @@ if __name__ == "__main__":
     # 3. Salesforce/codet5p-770m (large)
     # 4. Salesforce/codet5-large
     if args.mode == "train": 
-        dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
+        if isinstance(dataset, dict):
+            for split in dataset:
+                dataset[split] = dataset[split].map(preprocess_function, batched=True, desc="Running tokenizer")
+        else: dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
         train(args)
     elif args.mode == "eval": 
         test_dataset = SimpleDataset(data=[rec[input_key] for rec in dataset["test"]])
