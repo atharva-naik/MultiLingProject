@@ -8,7 +8,23 @@ from typing import *
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from datasets import load_dataset, load_metric
+from src.evaluator.CodeBLEU.calc_code_bleu import codebleu_fromstr
 from transformers import AutoTokenizer, AutoModel, T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments, DataCollatorForSeq2Seq, pipeline
+
+TREE_SITTER_LANG_CODE_CORRECTIONS = {
+    "cs": "c_sharp"
+}
+
+def exact_match_accuracy(refs, preds):
+    assert len(refs) == len(preds)
+    matches, tot = 0, 0
+    for ref, pred in zip(refs, preds):
+        ref = ref[0].strip("\n")
+        pred = pred.strip("\n")
+        matches += int(ref == pred)
+        tot += 1
+
+    return matches/tot    
 
 def preprocess_function(examples):
     padding = "max_length"
@@ -56,7 +72,7 @@ def get_cmdline_args():
     parser.add_argument("--per_device_train_batch_size", type=int, default=16, help="Batch size per GPU/TPU core for training.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=2, help="Number of steps to accumulate gradients before performing a backward/update pass.")
     parser.add_argument("--evaluation_strategy", type=str, default="steps", help="The evaluation strategy to use during training.")
-    parser.add_argument("--num_train_epochs", type=int, default=50, help="Total number of training epochs.")
+    parser.add_argument("--num_train_epochs", type=int, default=32, help="Total number of training epochs.")
     parser.add_argument("--gradient_checkpointing", type=bool, default=True, help="Whether to use gradient checkpointing to save memory during training.")
     parser.add_argument("--fp16", type=bool, default=True, help="Whether to use 16-bit (mixed) precision training.")
     parser.add_argument("--save_steps", type=int, default=200, help="Number of steps between saving checkpoints.")
@@ -68,6 +84,7 @@ def get_cmdline_args():
     parser.add_argument("--task", type=str, default="code_x_glue_cc_code_to_code_trans", help="task/dataset for training")
     parser.add_argument("--src", type=str, default="java", help="source language")
     parser.add_argument("--tgt", type=str, default="cs", help="target language")
+    parser.add_argument("--out_file", default=None, help="overwrite default file name of `test_output.json` with passed name.")
 
     # Parse arguments
     args = parser.parse_args()
@@ -86,28 +103,42 @@ class SimpleDataset(Dataset):
 
 def eval(args):
     print("evaluating:", args.model_name)
-    # model.cuda()
+    os.makedirs(args.output_dir, exist_ok=True)
     pipe = pipeline("translation", model=model, tokenizer=tokenizer, device="cuda:0")
-    test_dataset = SimpleDataset(data=[rec[input_key] for rec in dataset["test"]])
     print(len(test_dataset))
     label_str = []
     pred_str = []
     bleu_metric = evaluate.load("bleu")
     label_str = [[rec[target_key]] for rec in dataset["test"]]
     pbar = tqdm(pipe(
-        test_dataset, max_length=200,
+        test_dataset, max_length=300,
         batch_size=args.per_device_train_batch_size,
     ), total=len(test_dataset))
     for pred in pbar:
         pred_str.extend([item['translation_text'] for item in pred])
     assert len(pred_str) == len(label_str)
+    
     bleu_score = bleu_metric.compute(predictions=pred_str, references=label_str)
-    print(f'BLEU score: {bleu_score["bleu"]}')
+    if args.task == "code_x_glue_cc_code_to_code_trans":
+        lang = TREE_SITTER_LANG_CODE_CORRECTIONS.get(target_key, target_key)
+        code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
+        accuracy = exact_match_accuracy(refs=label_str, preds=pred_str)
+    elif args.task == "code_x_glue_tt_text_to_text":
+        code_bleu_score = 0
+        accuracy = 0
+
+    print(f'BLEU score: {100*bleu_score["bleu"]:.2f}')
+    print(f'CodeBLEU score: {100*code_bleu_score:.2f}')
+    print(f'Exact Match Accuracy: {100*accuracy:.2f}')
     print(bleu_score)
-    model_output_path = os.path.join(args.output_dir, "test_outputs.json")
+
+    out_file = args.out_file if args.out_file is not None else "test_outputs.json"
+    model_output_path = os.path.join(args.output_dir, out_file)
     with open(model_output_path, "w") as f:
         json.dump({
+            "accuracy": accuracy,
             "bleu": bleu_score,
+            "codebleu": code_bleu_score,
             "preds": pred_str,
             "references": label_str,
         }, f, indent=4)
@@ -115,9 +146,9 @@ def eval(args):
 def train(args):
     """code for fine-tuning CodeT5 for seq2seq translation"""
     # sacrebleu_metric = evaluate.load("sacrebleu")
-    dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
-    print("training:", args.model_name)
-    open(LOG_FILE_PATH, "w")
+    if os.path.exists(args.output_dir): # reset training log.
+        open(LOG_FILE_PATH, "w")
+    print("training:", args.model_name, f"on {args.src} to {args.tgt} {args.num_train_epochs} epochs")
     # training arguments.
     training_args = TrainingArguments(
         output_dir=args.output_dir,
@@ -165,15 +196,30 @@ if __name__ == "__main__":
     bleu_metric = evaluate.load("bleu")
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     model = T5ForConditionalGeneration.from_pretrained(args.model_name)
-    dataset = load_dataset(args.task)
+    
     if args.task == "code_x_glue_cc_code_to_code_trans":
         input_key = args.src
         target_key = args.tgt
+        dataset = load_dataset(args.task)
+    elif args.task == "code_x_glue_tt_text_to_text":
+        if args.tgt == "en":
+            input_key = "source"
+            target_key = "target"
+            subset =  f"{args.src}_{args.tgt}"
+        else:
+            input_key = "target"
+            target_key = "source"
+            subset =  f"{args.tgt}_{args.src}"
+        dataset = load_dataset(args.task, subset)
     LOG_FILE_PATH = os.path.join(args.output_dir, "train_logs.jsonl")
     # interesting models:
     # 1. Salesforce/codet5-base-multi-sum (base)
     # 2. Salesforce/codet5p-2b (extra large)
     # 3. Salesforce/codet5p-770m (large)
     # 4. Salesforce/codet5-large
-    if args.mode == "train": train(args)
-    elif args.mode == "eval": eval(args)
+    if args.mode == "train": 
+        dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
+        train(args)
+    elif args.mode == "eval": 
+        test_dataset = SimpleDataset(data=[rec[input_key] for rec in dataset["test"]])
+        eval(args)
