@@ -1,5 +1,5 @@
-SRC_LANG="python"
-TGT_LANG="en"
+SRC_LANG="en"
+TGT_LANG="javascript"
 TASK="code_x_glue_ct_code_to_text"
 STEP=500
 python -m src.models.codet5 --output_dir "hf_out/codet5/codet5p_770m/${TASK}/${SRC_LANG}2${TGT_LANG}" \

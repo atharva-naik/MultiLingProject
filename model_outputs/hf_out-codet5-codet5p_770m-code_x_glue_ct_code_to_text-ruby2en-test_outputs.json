@@ -1,0 +1,1141 @@
+{
+    "accuracy": 0,
+    "bleu": {
+        "bleu": 0.07635381685819788,
+        "precisions": [
+            0.2462360369111219,
+            0.10044932601098353,
+            0.050950179763739084,
+            0.026969857218402962
+        ],
+        "brevity_penalty": 1.0,
+        "length_ratio": 1.1219485614646905,
+        "translation_length": 10295,
+        "reference_length": 9176
+    },
+    "codebleu": 0,
+    "preds": [
+        "Get a list of all fans the authenticated user is a member of.\n\n @return [Array<User>] the list of fans the authenticated user is a member of",
+        "Returns a list of all stickers that have been purchased.",
+        "Returns a list of users who have blocked the bot",
+        "Update the user's profile\n\n @see https://dev.twitter.com/docs/api/1.1/users/profile/update.html\n\n @param attributes [Hash] A customizable set of attributes.\n @option attributes [String] :name The new profile's name.\n @option attributes [Integer] :twitter_id The new profile's Twitter ID.\n @option attributes [String] :facebook_url The new profile's Facebook URL.\n @option attributes [String] :website The new profile's website.\n @option attributes [String] :about The new profile's about page.\n @option attributes [Integer] :top_artists The number of artists the user is\n   on.\n @option attributes [Integer] :hangout The number of hours the user has been\n   hangout.\n\n @return [true]",
+        "Update the current user's laptop\n\n @param [String] name\n @return [Boolean]\n @raise [Trello::Error] if the request failed\n @example\n   user = Trello::User.find('123')\n   user.update_laptop('intel')",
+        "Updates the presence status.\n\n @param [Symbol] status The status of the presence.\n @return [Boolean] true.\n @raise [Telebot::Error::Unauthorized] raised when credentials are not valid.\n @raise [Telebot::Error::NotFound] raised when the presence cannot be found.\n @raise [Telebot::Error::InternalServerError] raised when a 500 is returned.",
+        "Sets the word and sentence components of the passage.\n\n @param [String] input The passage as a string.\n\n @return [void]",
+        "Returns the selected items for the given type and group.\n\n @param [Symbol] type the type of group to select\n @param [Symbol] group the group to select\n @return [Array] the selected items",
+        "Runs the block if the conditions match",
+        "Checks if the conditions match the data.\n\n @param [Hash] data the data to check\n @return [Boolean] true if the conditions match the data",
+        "Adds a storable to this holder.\n\n @param [Storable] storable the storable to add\n @param [Array] coordinate the coordinates of the storable\n @return [Holder] self",
+        "Copy the capacity of the container type to the current capacity.",
+        "Load user preferences",
+        "Execute the extraction process.",
+        "Returns a list of teams for a given summoner.\n\n Optional:\n * <tt>:region</tt> - The region the summoner is in.  If not specified, the current region will be used.",
+        "Get the doctype from the template.yml file in the document directory",
+        "Create a new allocation filter\n\n @param [#process] row_filter\n @param [#process] key_filter\n @param [#process] col_filter\n @param [#process] infile\n @param [#process] outfile\n @return [void]\n Execute the allocation filter\n\n @return [void]",
+        "Returns the vector that this point is within the given spanner.\n\n @param [Point] spanner The spanner to span the point to\n @return [Vector] The vector that the point is within the given spanner",
+        "Builds the feed.",
+        "Logs configuration information",
+        "Log the time it took to generate the block",
+        "Execute the operation and return the result",
+        "Create operands hash",
+        "Publish a message to the MQTT server.\n\n === Parameters\n params(Hash):: Hash of parameters to send to the MQTT server.\n\n === Return\n message_id(String):: Message ID",
+        "publishes message to socket\n @param [String, Hash] params message to send\n @return [void]",
+        "Publishes a message to the Turntable HTTP API\n\n @param [Hash] params the parameters to send to the Turntable HTTP API\n @option params [String] :api the Turntable API to call\n @option params [String] :msgid the message ID to send to the Turntable HTTP API",
+        "Handle messages from the server",
+        "Add default values for the table",
+        "Pings the host.",
+        "Copy files from one or more sources to another.\n\n === Parameters\n froms(Array):: source paths\n to(String):: destination path\n as(String):: destination user, defaults to current user\n quiet(Boolean):: suppress all log messages\n\n === Return\n true:: Always return true",
+        "Write a string to a file.\n\n @param [String] string\n   The string to write.\n\n @param [String] to\n   The path to the file.\n\n @param [Symbol] as\n   The encoding to use.\n\n @param [Boolean] quiet\n   Whether to suppress the output.\n\n @return [void]",
+        "Reads a file as Base64 encoded string.\n\n @param [String] filename\n   the path to the file to be read\n\n @param [String] as\n   the encoding to read the file as\n\n @param [Boolean] quiet\n   if true, no output will be printed\n\n @return [String]\n   the base64 encoded string of the file",
+        "run a shell command\n\n @param [String] command the command to run\n @param [String] as the user to run the command as\n @param [Boolean] quiet if true, no output will be sent\n\n @return [String] the output of the command",
+        "Returns true if the given object can hold a child specimen of this type",
+        "Process the aggregation file and add it to the heading",
+        "Write the result to the file",
+        "Initialize the sum scheme\n\n @param [String] sum_scheme The sum scheme to use.\n\n @return [void]",
+        "Sets the attributes for the current object.\n\n @yield [attributes]\n   A block that parses the attributes from a string.\n\n @yieldparam [Hash] attributes\n   The attributes for the current object.\n\n @return [self]\n\n @api public",
+        "Resolve dependencies\n\n @param [Array<String>] dep_hashes\n @param [Array<RemoteRepository>] repos\n @return [Array<String>] list of resolved artifacts",
+        "Place a stone on the board",
+        "Parse command line options",
+        "Execute an XML-RPC request.",
+        "Returns an array of leagues for a given summoner.\n\n Optional parameters:\n * <tt>:region</tt> - The region to query for leagues.  See {Sightstone.region} for a list of valid regions.",
+        "Returns an array of league entries for a given summoner.\n\n Optional parameters:\n * <tt>:region</tt> - The region to query for leagues.  See {Sightstone.region} for a list of valid regions.",
+        "Place this sticker on the room.\n\n @param [Integer] top The top position of the sticker.\n @param [Integer] left The left position of the sticker.\n @param [Integer] angle The angle of the sticker in degrees.\n\n @return [true]",
+        "Find the feed URIs for this site.\n\n Returns an array of URI strings.",
+        "Sets the collection status.\n\n @param [String] value the status",
+        "Creates the default consent tier statuses for each of the registered\n consent tier responses.",
+        "Returns the default collection event for this protocol.\n\n @return [Event]",
+        "Returns the default receiver for this event.\n\n @return [Coordinator] the default receiver for this event.",
+        "Decrement the available quantity of a derived specimen by the given child's initial quantity.\n If the child's available quantity is less than the parent's, the child's available quantity is set to zero.\n If the child's available quantity is greater than the parent's, the child's available quantity is set to the parent's available quantity minus the child's initial quantity.\n\n @param [Jamf::Specimen] child the child specimen to decrement the available quantity by\n @raise [Jamf::ValidationError] if the derived specimen has an initial quantity that is less than the parent's, or if the derived specimen has an available quantity that is greater than the parent's",
+        "Updates the dependent object in the context of the owner object.\n\n @param [Object] owner the owner of the dependent object\n @param [Property] property the dependent property\n @param [Object] dependent the dependent object\n @param [Boolean] autogenerated whether or not the dependent object was automatically generated",
+        "This method is used to update a user's address with a new address identifier.\n The address identifier is swizzled and the new address identifier is used as the\n source of the address update.",
+        "Adds the given specimen's position to the given template, if it has\n not been set already.\n\n @param [Specimen] specimen the specimen to add the position to\n @param [Template] template the template to which the specimen's position\n   should be added",
+        "Ensures that the annotation hook entity for the primary annotation has been created.\n\n @param [CaRuby::Annotation] the annotation to ensure that the hook entity for the primary annotation\n   exists\n @raise [DatabaseError] if the annotation hook entity does not exist",
+        "Copy the annotation proxy owner to the template.\n\n @param [Object] obj the annotation proxy owner\n @param [Object] template the annotation template\n @return [void]",
+        "Create the table data.",
+        "Write the table to a file.",
+        "Converts a string to a number.\n\n @param [String] value The string to convert.\n @return [Integer, Float] The number.",
+        "Prepare the sum row pattern.",
+        "Add a value to the sum row\n @param [Integer] value\n @param [String] column",
+        "Create the sum row for this table.",
+        "Rewrap an array with the wrapped results.\n\n @param [Array] result The array to wrap.\n\n @return [Collection] The wrapped collection.",
+        "Adds a dependency to the graph.\n\n @param [Object] key the key of the dependency\n @param [Array] dependencies the dependencies",
+        "Resolve the dependency of a node.\n\n @param [Graph::Node] node",
+        "Returns a list of all rooms in this user's directory.\n\n @return [Array<Room>]",
+        "Search for rooms.\n\n @param [String] query Search query.\n @param [Hash] options Options for search.\n @option options [Integer] :limit (20) Maximum number of results to return.\n @option options [Integer] :skip (0) Number of results to skip.\n\n @return [Array<Room>] The list of rooms that match the search query.",
+        "Loads playlist data from the API.\n\n @param [Hash] options\n @option options [Boolean] minimal\n   If true, only minimal playlist data is returned.",
+        "Update an existing model.\n\n @param [Hash] attributes\n @option attributes [Integer] :id\n   Required. ID of the model to be updated.\n\n @return [TrueClass]\n\n @api public",
+        "Returns whether or not this playlist is currently active.",
+        "Adds a new attribute to the model.\n\n @example\n   class User\n     include ActiveModel::Conversion\n\n     attr_accessor :name\n\n     def name\n       @name ||= 'John'\n     end\n\n     def name=(name)\n       @name = name.to_s\n     end\n   end\n\n   User.new.add(:name, :type => 'string')\n   # => #<User:0x007fafde8b0c0 @name=\"John\">\n\n @param [Symbol, String] name\n   the name of the attribute\n @param [Hash] options\n   the options for the attribute\n @option options [Symbol] :type\n   the type of the attribute\n @option options [Proc] :coercer\n   a proc that will be used to coerce the value\n\n @return [User]\n\n @api public",
+        "Creates a new SpecimenCollectionGroup for the protocol.\n\n @param [Hash] hash the parameters to use for creating the new SCG\n @option hash [String] :participant the participant to use for the new SCG\n @option hash [String] :registration the registration to use for the new SCG\n @option hash [String] :collection_protocol_registration the collection protocol\n   registration to use for the new SCG\n @option hash [String] :collection_protocol the collection protocol to use for the new SCG\n @option hash [String] :collection_protocol_name the collection protocol name to use for the new SCG\n @option hash [String] :collection_protocol_version the collection protocol version to use for the new SCG\n @option hash [String] :specimen_type the type of specimen to create for the new SCG\n @option hash [String] :specimen_name the name of the specimen to",
+        "Returns a single summoner by name or id.\n\n @param [String, Integer] name_or_id The name or id of the summoner to find.\n @param [Hash] optional Parameters for the summoner lookup.\n @option optional [String] :region The region the summoner is in.\n @option optional [Integer] :season The season the summoner is in.\n @option optional [Integer] :season_end The season the summoner is in.\n @option optional [Integer] :season_start The season the summoner is in.\n @option optional [Integer] :season_id The season id the summoner is in.\n @option optional [Integer] :season_level The season level the summoner is in.\n @option optional [Integer] :season_type The season type the summoner is in.\n @option optional [Integer] :season_",
+        "Returns a hash of all the names for the given summoners.\n\n The hash's keys are the summoner IDs, and the values are the names.\n\n If a block is given, yields each hash value.\n\n @param [Array] ids The summoner IDs to fetch the names for.\n @param [Hash] optional The optional parameters.\n @option optional [String] :region The region to query for summoners.\n @return [Hash] The names for the given summoners.",
+        "Returns a RuneBook for a given summoner.\n\n @param [Summoner, Integer] summoner Summoner instance or summoner ID\n @param [Hash] optional Options for fetching RuneBook\n @option optional [String] :region (@sightstone.region) Region to query for RuneBook\n @option optional [Integer] :page (1) Page number to start from\n @option optional [Integer] :perpage (25) Number of results per page\n @return [RuneBook]",
+        "Returns a hash of rune books for a list of summoners.\n\n   runebooks([@summoner], region: 'us_east_1')\n\n   #=> {\n   #   @summoner => {\n   #     :id => @summoner.id,\n   #     :name => @summoner.name,\n   #     :runes => [\n   #       {\n   #         :id => @rune.id,\n   #         :name => @rune.name,\n   #         :price => @rune.price\n   #       }\n   #     ]\n   #   }\n\n   #   ...\n   # }",
+        "write the archive to file",
+        "Collect the specimen event parameters from the given options.\n\n @param [Hash] opts the options to extract the parameters from\n @option opts [Boolean] :with_specimen_event_parameters whether to include the specimen event parameters in the output\n @option opts [Boolean] :with_specimen_event_parameters_in_header whether to include the specimen event parameters in the header\n @option opts [Boolean] :with_specimen_event_parameters_in_footer whether to include the specimen event parameters in the footer",
+        "Dynamically create methods for the various types of data.",
+        "Match boolean filter with values\n @param [Array] values values to match the filter with\n @return [Boolean] true if the filter matches, false otherwise",
+        "Iterate through each column and evaluate the pivot operation\n\n @param [Array] values\n @yield [column, match]",
+        "Create a filter from a string.\n\n @param [String] values The filter string.\n\n @return [Array] The filter values.",
+        "Adds a value to the filter if it's not already in the filter.",
+        "Adds a new filter that will match any type of value.\n\n @param [Symbol] type the type to match against\n @param [Object] value the value to match against\n @param [Array] args the arguments to pass to the filter\n @param [Proc] block the block to pass to the filter",
+        "Add a range to the filter.\n\n @param [#to_i] start_value\n @param [#to_i] end_value\n @param [Array] args\n @param [Proc] block",
+        "Add a new type to the filter, and add it to the list of types to be\n filtered.",
+        "Define a regex column as a pivot column\n\n @param [Symbol] col\n @param [String] r\n @param [Array] args\n @param [Proc] block",
+        "Add a date comparator to the pivot column.\n\n ==== Parameters\n\n * <tt>col</tt> - the name of the column the pivot column is defined in\n * <tt>comparator</tt> - the comparator to use\n * <tt>date</tt> - the date to use\n * <tt>args</tt> - any additional arguments\n * <tt>block</tt> - a block to be invoked when the operation is called",
+        "Add a date range to the pivot column.",
+        "Define a number pivot\n @param [String] col the column name\n @param [String] comparator the comparator type\n @param [String] number the number type\n @param [Array] args the arguments for the comparator\n @param [Proc] block the block for the number",
+        "Define a number range for the pivot column",
+        "Creates an annotation for a given caTissue object.\n\n @param [Object] hook the caTissue object to be annotated\n @param [Object] annotation the annotation to be created",
+        "Joins this series with another series, with the same number of\n columns and rows.\n\n @param [Hash] options\n @option options [String] :delimiter (default: \", \") The delimiter used to join the series.\n @option options [String] :final_delimiter (default: \"\") The final delimiter used to join the series.\n @option options [String] :conjunction (default: \" and \") The conjunction used to join the series.\n @option options [String] :locale (default: I18n.locale) The locale to use for translation.",
+        "Format a string according to the language specified in the config.\n\n @param [String] string\n @return [String]",
+        "Set meta data\n @param [String, Hash] val\n @return [Boolean]",
+        "Create a new filter\n\n @param [String] infile\n   the path to the input file\n @param [String] outfile\n   the path to the output file\n @param [Hash] options\n   options to pass to the filter\n @option options [String] :row_filter\n   a filter that will be used to filter the rows of the input file\n @option options [String] :category_filter\n   a filter that will be used to filter the categories of the input file\n @option options [Array] :collection\n   a collection of categories and entries\n @option options [String] :format\n   the format to use for the output file\n Execute the filter\n\n @return [void]",
+        "Initialize the collection with the given column filter\n\n @param [String] column_filter The column filter string\n\n @return [void]",
+        "The logger for this command.\n\n @return [Logger]",
+        "Require aether dependency\n\n @param deps [Array<Array<String>>]\n @return [nil]",
+        "Creates the lookup table.",
+        "Convert position string to an array of column positions",
+        "Create the joiners",
+        "Adds default values for all fields that are not set on this record",
+        "Returns a SpreadSheet object at the specified range of coordinates.\n\n @param [Range<Integer>] range The range of coordinates to retrieve.\n @return [Spreadsheet] A SpreadSheet object at the specified range of\n   coordinates.",
+        "Collect the values for each column.\n\n @return [Array]",
+        "Rename the dataset.\n\n @param [Hash] opts Options for renaming the dataset.\n @option opts [Array<String>] :rows New names for the rows.\n @option opts [Array<String>] :cols New names for the cols.",
+        "Returns a string representation of this table.",
+        "Returns an array of rows from the specified parameters.\n\n The parameters are:\n\n [<tt>:cols</tt>] The number of columns in the output.\n [<tt>:rows</tt>] The number of rows in the output.\n [<tt>:values</tt>] The values to use for each column.\n [<tt>:file</tt>] The file to read from.\n [<tt>:ds</tt>] The data source to use.",
+        "Returns a new array with the same rows, but with different column sizes\n\n @param rows [Array]\n @return [Array]",
+        "Returns true if the rows have the same number of columns as the columns\n in the output file.",
+        "Coerce numeric values to Spreadsheet objects\n\n @param [Numeric] value\n @return [Spreadsheet]\n @api private",
+        "Process the operator and return a new SpreadSheet.\n\n @param [Symbol] operator the operator to process\n @param [Array, SpreadSheet] s the operand\n @return [SpreadSheet] a new SpreadSheet with the result of the operator",
+        "Process the file and count the rows and columns.",
+        "Write the result to the file",
+        "Initialize the sum scheme.",
+        "Initializes the key titles and columns.",
+        "The heading of the original pivot sequence.\n\n @return [Array<Symbol>] the heading of the original pivot sequence",
+        "Process the given string and return the filtered string or nil if no filter\n is set.\n\n @param [String] object the string to filter\n @param [Hash] options the options to use for filtering\n @option options [String] :row the row to filter by\n @return [String, nil] the filtered string or nil if no filter is set",
+        "Get the messages sent to this receiver.\n\n @return [Array<Message>]",
+        "Returns the stalking room for this user.",
+        "Boot a user from this room.\n\n @param [String] reason for booting\n\n @return [Boolean] true",
+        "Report this user as a report to the room.\n\n @param [String] reason The reason the user is being report.",
+        "Returns a default derived characteristics object for the specimen.",
+        "Set the region of the polyline.\n\n @example\n   polyline.region = {\n     x: 10,\n     y: 20,\n     width: 30,\n     height: 40\n   }\n\n @param [Hash, CoordinateRegion] args The region to set.\n @option args [Float] :x The x coordinate.\n @option args [Float] :y The y coordinate.\n @option args [Float] :width The width of the region.\n @option args [Float] :height The height of the region.\n @option args [Boolean] :animated Whether the region should be animated.\n\n @return [Polyline] The polyline itself.",
+        "Returns the site of the collection.\n\n @return [Site, nil] the site of the collection, or nil if no collection is\n   present.",
+        "Returns true if this object and the other object match the characteristics of this object.",
+        "Returns the default user for this specimen.",
+        "Export translations to file",
+        "Saves the translations to a file.\n\n @param translations [Hash]\n @param file [String]",
+        "Returns the translations for the current locale.",
+        "Loads the access properties from the properties file.\n\n @return [Hash] the access properties",
+        "Parse the data file",
+        "Download the status and data files",
+        "Download the file to disk",
+        "Returns a random URL from the status file",
+        "Clear the Cache\n\n === Parameters\n var<Symbol>:: The Variable to Clear",
+        "Write JSON to file\n\n @param [String] file path to file\n @param [Hash] object to write",
+        "Read a file as a string.\n\n @param [String, File] file\n   The file to read.\n\n @param [Fixnum] size\n   The maximum size of the file to read.\n\n @return [String]\n   The file as a string.\n\n @since 0.2.0",
+        "Returns the common elements of two arrays.\n\n @param ary [Array<Integer>]\n @return [Array<Integer>]",
+        "Main event listener thread.\n\n @return [void]",
+        "Register an observer class for model changes\n\n @param [Class] observer_class The observer class to register",
+        "Registers an observer for events\n\n @param [Observer] observer the observer to register\n @return [void]",
+        "un-registers an observer\n\n @param [Class] observer_class the class of the observer\n @param [String] observer_id the id of the observer",
+        "Create a observer queue for this listener",
+        "Returns a hash representation of the event.\n\n @param [Hash] options Options for the hash representation\n @option options [Boolean] :omit_parameters (false) Omit the parameters in the hash\n @return [Hash]",
+        "Create a new file or directory",
+        "Move a file or directory.\n\n @param [Symbol] action\n   The action to perform.\n\n @option options [String] :path\n   The path to the file or directory to move.\n\n @option options [String] :destination\n   The destination path.\n\n @option options [String] :overwrite\n   Whether to overwrite the file or directory.\n\n @option options [String] :prompt\n   The prompt to display before the move operation.\n\n @option options [String] :prompt_message\n   The message to display before the move operation.\n\n @option options [String] :prompt_title\n   The title to display before the move operation.\n\n @option options [String] :prompt_description\n   The description to display before the move operation.\n\n @option options [String] :prompt_error\n   The error message to display before the move operation.\n\n @option options [",
+        "Parse command line options and return them as an object.",
+        "Replaces links in the given text with their corresponding file links.\n\n @param text [String] The text to resolve links to.\n @return [String] The resolved text.",
+        "=> Build the Faraday Connection",
+        "Add an entity condition\n\n param [String] entity_id ID of the entity\n param [String] condition_id ID of the condition\n param [String] entity_type Type of entity: 'Server' or 'Client'",
+        "Delete an entity condition\n\n param [String] entity_id ID of the entity\n param [String] condition_id ID of the condition\n param [String] entity_type Type of entity to delete ('Server' or 'Client')",
+        "Get information about a server by its ID.\n @param [String] server_id The server ID.\n @return [Hash] The server information.",
+        "Returns the name of a server.",
+        "Get a list of servers with the specified labels\n\n @param [Array] labels\n @return [Array]",
+        "Subscribe to the events queue and handle them.\n\n @param client [Client] the client to subscribe to",
+        "Bind a queue to an exchange.\n\n @param queue_name [String] the name of the queue\n @param exchange_name [String] the name of the exchange\n @param routing_keys [Array<String>] an array of keys to subscribe to\n @param block [Block] a block to be called when the subscription is complete\n @yieldparam subscription [BunnyMock::Subscription] the subscription object\n @return [BunnyMock::Queue] the queue that was bound",
+        "Create a queue on the broker.\n\n @param queue_name [String] the name of the queue\n @param exchange_name [String] the name of the exchange\n @param options [Hash]\n @option options [Hash] :queue_options (default: {durable: true})\n   The options for the queue.\n @option options [Array] :routing_keys (default: [])\n   An array of keys to bind to the queue.\n\n @return [Queue] the created queue",
+        "Subscribe to a queue\n\n === Parameters\n queue(Queue):: Queue to subscribe to\n options(Hash):: Subscribe options\n   :manual_ack(Boolean):: Whether to manually acknowledge the receipt of the message\n\n === Block\n Optional block with the following parameters to be called when a message is received:\n   payload(String):: Received message payload\n\n === Return\n true:: Always return true",
+        "Returns the channel associated with this client.\n\n @return [Channel]",
+        "Publish a message to an exchange with a given routing key\n\n @param exchange [String] the name of the exchange\n @param routing_key [String] the routing key\n @param payload [String] the payload to send\n @param options [Hash] the options to pass to the publish method\n @option options [Boolean] :no_declare (false) whether to skip declaring this queue on the broker\n   to cause its creation; for use when client does not have permission to create or declare the queue\n @option options [Boolean] :no_declare_if_exists (false) whether to skip declaring this queue on the broker\n   to cause its creation; for use when client does not have permission to create or declare the queue\n @option options [Boolean] :persistent (true) whether to persist the message in the broker\n @return [nil]",
+        "Creates a new post.\n\n === Parameters\n opts(Hash):: options for the post\n\n === Options\n :title(String):: the title of the post\n :slug(String):: the slug of the post\n :layout(String):: the layout to use for the post\n :content(String):: the content of the post\n :content_type(String):: the content type of the post\n :content_encoding(String):: the content encoding of the post\n :content_language(String):: the content language of the post\n :content_status(String):: the content status of the post\n :content_status_description(String):: the content status description of the post\n :content_status_code(String):: the content status code of the post\n :content_status_url(String):: the content status url of the post\n :content_thumbnail(String):: the thumbnail of the post",
+        "Creates a draft file for a given post.\n\n @param [Hash] opts the options for creating the draft\n @option opts [String] :title the title of the draft\n @option opts [String] :slug the slug of the draft\n @option opts [String] :layout the layout of the draft\n @option opts [String] :content the content of the draft\n @option opts [String] :author the author of the draft\n @option opts [String] :category the category of the draft\n @option opts [String] :tags the tags of the draft\n @option opts [String] :content_type the content type of the draft\n @option opts [String] :content the content of the draft\n @option opts [String] :content_format the content format of the draft\n @option opts [String] :author_format the author format of the draft\n @option opts [String] :category_format the category format of the",
+        "Publishes a draft file to the post folder.\n\n draftpath - The path to the draft file.\n opts    - A hash of options.\n\n Returns the path to the published file.",
+        "Returns the terminal size in pixels.",
+        "Set up the terminal modes to be used by the terminal.",
+        "Extract the permission subjects from a subject.\n\n @param [Object] subject\n   The subject to extract the permission subjects from.\n\n @return [Array<Object>]\n   The extracted permission subjects.\n\n @api private",
+        "=> Start the Daemonizer process",
+        "Run the application",
+        "Ensure that the current directory is a jekyll dir.\n\n Returns the relative path to the current directory.",
+        "Get the layout file contents and the file extension.\n\n @param layout_path [String] The path to the layout file.\n @return [String] The layout file contents and the file extension.",
+        "Generate the usage message",
+        "Send a notification message to the user.\n\n @param message [String] The message to display.\n @param subtitle [String] The subtitle to display in the notification.\n @param title [String] The title to display in the notification.",
+        "Show OSX notification",
+        "analyze a string\n @param [String] string to analyze\n @param [Hash] options\n @option options [Boolean] :symbol_sequence if true, return symbols instead of strings",
+        "Generate a string of random characters",
+        "=> Parse CLI Options and Apply Configuration",
+        "Returns a list of missing specs from the database.",
+        "Remove all servers that have been reported more than the given time window.\n\n @param [Time] keeptime the time window to remove servers that have been\n   reported more than. If nil, remove all servers.",
+        "Find servers that are not in the excluded list",
+        "Send an SMS confirmation to Twilio",
+        "Send a voice confirmation to Twilio to initiate a voice call",
+        "Validates a value against a format.\n\n @param [String] value the value to validate\n @param [String] format the data format to validate against\n @param [Boolean] raise_error if true, an exception will be raised if the\n   validation fails\n @return [Boolean] the result of the validation",
+        "Create a new HTTP session.\n\n @param url [String] the URL to connect to\n @param settings [Hash] the session settings\n @param block [Proc] the HTTP request handler\n\n @return [HTTP::Session] the new session\n\n @since 0.2.0\n Start a HTTP session.\n\n @param url [String] the URL to connect to\n @param settings [Hash] the session settings\n @param block [Proc] the HTTP request handler\n\n @return [HTTP::Session] the session",
+        "Returns an array of all the fields for a given table and field name and value.\n\n @param [String] table\n @param [String] field_name\n @param [String] value\n @return [Array<Hash>]",
+        "Create a new condition.\n\n @param [#valid?] condition\n   The condition to evaluate.\n\n @param [#call] adjuster\n   The adjuster to apply.\n\n @return [#call]\n   The new condition.\n\n @raise [TypeError]\n   If the condition is not {Validation.conditionable?}\n   or if the adjuster is not {Validation.adjustable?}\n\n @api public",
+        "Apply adjusters to the value returned by the result of the given block.\n\n @param [#call] adjuster1\n @param [#call] adjuster2\n @param [Array<#call>] adjusters\n @return [#call]\n @raise [TypeError] if adjuster is not adjustable\n @raise [ArgumentError] if adjusters are not adjustable",
+        "Create a new parser.\n\n @param [Integer, String, ->{String}] parser\n   The parser object.\n\n @raise [TypeError]\n   The parser object is wrong type.\n\n @return [Integer, String, ->{String}]\n   The parsed value.\n\n @example\n   PARSE(5) => 5\n   PARSE(5.0) => 5.0\n   PARSE(5.0s) => 5.0s",
+        "Get a class by its name.",
+        "Create a new HTTP connection.\n\n @param [Hash] options The options for the HTTP connection.\n @option options [String] :scheme The HTTP scheme to use.\n @option options [String] :host The HTTP host to connect to.\n @option options [Fixnum] :port The HTTP port to connect to.\n @option options [String] :path The HTTP path to use.\n @option options [Hash] :headers The HTTP headers to use.\n @option options [String] :body The HTTP body to use.",
+        "Wake up the thread waiting for the given timeout.\n\n @param [Time] start_time the time when the thread started\n @param [Integer] timeout the number of seconds to wait for the\n   thread to finish\n @return [nil]",
+        "Generates links for the given actions.\n\n model - The model instance\n instance_name - The instance name of the model\n actions - The actions to generate the links for\n args - The arguments to pass to the links",
+        "Creates an obfuscated link to a given URL with an optional label and an image.\n\n @param [String] path The URL to link to.\n @param [String] image The image to use as the link.\n @param [String] label The label to use for the link.\n @param [Hash] args The arguments to pass to the link.\n @return [String] The HTML to display an obfuscated link.",
+        "Helper method for required fields.\n\n model - the model object\n element - the form element\n html   - the html to append to\n\n Returns the html to append to the body.",
+        "Generates the HTML for a filter form.\n\n model - The model class to use\n nvpairs - The filter parameters\n params - The request parameters",
+        "Creates a link to sort the given model by a given field.\n\n model - The model to sort by.\n field - The field to sort by.\n params - The query string parameters.\n html_options - A hash of HTML options to be passed to link_to.",
+        "Creates a label with an inline help.\n\n @param [String] label_text The text to display as the label.\n @param [String] field_id The ID of the form field.\n @param [String] help_text The text to display as the help.",
+        "Press a key.\n\n @param [String] keys\n   The key to press.\n\n @raise [RFormSpec::Exception::NoMethodError]\n   If the key is not recognized.\n\n @since 0.5.0",
+        "Open a file dialog",
+        "Parses the command line options and returns the parsed options.",
+        "Add a new file to the repository.",
+        "Runs the migration.",
+        "Returns all parents of this page",
+        "Extract the text of the first of the given attributes from the search\n results.\n\n @param [Array<Symbol>] attributes the attributes to extract from the\n   search results.\n @return [String] the text of the first of the given attributes from the\n   search results.",
+        "Set the attributes of the object to be used as the query for the search\n query.",
+        "convert manager uri to websocket",
+        "Parse the configuration file",
+        "Check that the given script is executable.\n\n @param [String] path the path to the script to check\n @return [String] the path to the script if it is executable",
+        "Sync the host table with the foreman API",
+        "Initializes the database and syncs the host table with the database.",
+        "Execute the appropriate hook action.",
+        "Read a list from the redis database.\n\n @param [String] name\n   the attribute name\n\n @return [String, nil]\n   the list value or nil if the list does not exist\n\n @api private",
+        "Reads a hash from the redis cache.\n\n @param [String] name\n   The name of the attribute to read.\n\n @return [Hash]\n   The value of the attribute.\n\n @since 0.2.0",
+        "Write an attribute to the record.\n\n @param [Symbol] name\n @param [Object] val\n\n @return [self]",
+        "Write a list to the cache.\n\n @param name [String] the name of the list\n @param val [Array] the value to store",
+        "Store a Hash in the hash store\n\n @param [String] name\n @param [Hash] val",
+        "Updates the attributes of the current record with the given attributes.\n\n @param attrs [Hash] The attributes to update.",
+        "Filters the given objects according to the current user's policy.\n\n @param [Symbol] method\n   The action to perform on each object. Can be `:show`, `:edit`, `:create`,\n   `:update`, or `:destroy`.\n @param [Array] objects\n   An array of objects to be filtered.\n @param [Object] user\n   The user to check the policy for.\n\n @return [Array]\n   The filtered objects.",
+        "Check if the current user can perform the given action on the given object\n\n @param [Symbol] method\n   the action to check\n @param [Object] object\n   the object to check the policy for\n @param [Object] user\n   the user to check the policy for",
+        "Get nethash information for a given interval of blocks\n @param [Integer] interval seconds to get nethash information for\n @param [Integer] start block index to start from\n @param [Boolean] stop block index to stop at or after start\n @return [Hash] nethash information for the given interval",
+        "Returns the last N members from the index.\n\n @param limit [Integer] the maximum number of members to return\n @param offset [Integer] the index offset\n @return [Array<Mongoid::Document>] the last N members",
+        "Find a record by id or array of ids\n\n @param [Integer, Array<Integer>] ids\n @param [Hash] opts\n @option opts [String] :order\n   order of results returned\n @option opts [Integer] :limit\n   maximum number of records to return\n @option opts [String] :search\n   search term\n @option opts [String] :search_field\n   field to search for\n @option opts [String] :search_string\n   string to search for\n @option opts [Boolean] :include_docs\n   include docs in the response\n @option opts [Boolean] :include_meta\n   include meta information in the response\n @option opts [Boolean] :include_relations\n   include relations in the response\n @option opts [Boolean] :include_tags\n   include tags in the response\n @option opts [Boolean] :include_version\n   include version information in the",
+        "Find records in batches.\n\n @param [Hash] options\n @option options [Integer] :start (0) Start position to begin from.\n @option options [Integer] :batch_size (500) Batch size.",
+        "Load the keymap.",
+        "Returns the mapped key for the given map and key.\n\n @param map [Symbol] the map to lookup\n @param key [Object] the key to lookup\n @return [Object] the mapped key",
+        "Returns the number of processors on the target system.\n\n @return [Fixnum] The number of processors on the target system.",
+        "Returns the number of physical processors on the current system.\n\n @return [Fixnum]\n   The number of physical processors on the current system.",
+        "Validates the sandbox.\n\n Validity checks are performed by running the valid block of each filter, and then\n running the invalid block of each filter, if any.\n\n @param [Hash] options\n   Options for the sandbox.\n\n @option options [Hash] :input\n   Options for the sandbox.\n\n @option options [Boolean] :status\n   Returns true if the sandbox is valid, false otherwise.\n\n @option options [Array] :errors\n   Returns an array of errors.",
+        "Reloads the event list from the event file.",
+        "Returns true if the user is a followee of the given model\n @param model [Model]\n @return [Boolean]",
+        "Returns an array of all the ever followed users",
+        "Waits for the given mutex to be released.\n\n @param [Object] mutex\n   The mutex to wait on.\n\n @param [Integer] timeout\n   The number of seconds to wait for the mutex to be released.\n\n @raise [InterruptedError]\n   If the thread is interrupted.\n\n @return [self]\n\n @api public",
+        "Validates that the given argument is a valid timeout value.\n\n @param timeout [Numeric] the timeout value\n @raise [TypeError] if the timeout value is not a Numeric\n @raise [ArgumentError] if the timeout value is negative",
+        "Render the content using the ERB template.\n\n template_name - The String name of the template.\n view_handler - The ActionView::Base instance to use to render the\n               content.\n locals - A Hash of locals to use to render the template.\n content - The String content to render.\n\n Returns the String rendered content.",
+        "Runs the entry for this page.\n\n Returns true, the entry and the Google Drive entry.",
+        "Picks a card from the card list based on the number of cards and the\n preference.\n\n @param [Integer] number The card number to pick from.\n @param [Array<Card>] cards An array of cards to pick from.\n @return [Array<Card>] The cards picked.",
+        "Discards the last card on the game.\n\n @example\n   player.discard\n\n @return [Array<Card>] the cards on the game",
+        "Plays the game.\n\n @note This method is called automatically when the game is started.\n\n @return [void]",
+        "Sleep for the specified number of seconds.\n\n @param [Float] timeout the number of seconds to sleep\n @return [Float] the number of seconds elapsed",
+        "This method is used to temporarily release a lock while the block is running.\n If the block is not running, the lock is released immediately.\n\n @yield the block to execute\n @return the return value of the block",
+        "Runs the given block in a separate thread and returns the duration of the block.\n\n @yield [Time] The start time of the block\n @yieldreturn [Float] The duration of the block in seconds",
+        "Wait for the test to finish.",
+        "If the block is called with no arguments, it returns the result of the\n block. Otherwise, it calls the block with the given arguments and returns\n the result.",
+        "Extract the RDoc of a file.\n\n @param [String] file the file to extract the RDoc from\n @param [Integer] from the index of the first line to extract\n @param [Boolean] reverse whether to extract the RDoc in reverse order\n @return [String] the extracted RDoc",
+        "Returns a new Query object with the given fields selected.\n\n   User.select([:name, :age])\n   # => #<User id: nil, name: nil, age: nil>\n\n   User.select([:name, :age, :_id])\n   # => #<User id: nil, name: nil, age: nil, _id: nil>\n\n   User.select([:name, :age, :_id, :_rev])\n   # => #<User id: nil, name: nil, age: nil, _id: nil, _rev: nil>\n\n   User.select([:name, :age, :_rev, :_id])\n   # => #<User id: nil, name: nil, age: nil, _id: nil, _rev: nil>\n\n   User.select([:name, :age, :_",
+        "Sets the pagination information.\n\n @param [Integer] page_no The current page number.\n @param [Integer] page_size The number of records per page.\n @param [Integer] record_count The total number of records.",
+        "Set the echo uploads data.\n\n @param data [String] the echo uploads data",
+        "Returns true if the user is a follower of the given model.\n\n @param model [Model]\n @return [Boolean]",
+        "follows a model\n\n @param [Model] model\n   the model to follow\n\n @return [void]\n\n @api public",
+        "unfollows a model\n\n @param [Array] models\n   the models to unfollow\n\n @return [void]",
+        "Returns an array of all followers of the user",
+        "Pops an item from the queue.\n\n @param [Boolean] non_block if true, raises a ThreadError if the queue is\n   closed\n @return [Object] the item popped from the queue",
+        "Lookup a link by its key.\n\n @param [String] key\n   The key to lookup.\n\n @param [Hash] opts\n   Additional options.\n\n @yield [Link]\n   The block will be passed the found link.\n\n @yieldparam [Link] link\n   The link found.\n\n @return [Link, nil]\n   The link or nil if it could not be found.",
+        "announce a new link\n\n @param [String] key the key for the link\n @param [String] port the port for the link\n @param [Hash] opts the options for the link\n @option opts [Boolean] :auto_announce (true) whether to automatically\n   announce the new link\n @option opts [String] :reason for the auto_announce\n @option opts [String] :reason_text for the auto_announce\n\n @yield the block to be called when the announce is received\n\n @return [void]",
+        "Returns a logical operator that applies to all the conditions.\n\n @param [Symbol] delegated\n   The operator to apply to the conditions.\n\n @param [Array[Condition]] conditions\n   The conditions to apply the operator to.\n\n @raise [TypeError]\n   If the conditions are not {Conditionable}.\n\n @return [Proc]\n   The logical operator.\n\n @api private",
+        "POST with signature\n\n @param [Hash] opts\n @option opts [String] :path\n @option opts [String] :payload\n @option opts [String] :secret\n\n @return [Net::HTTPResponse]",
+        "Get height of image",
+        "Create a string representation of the color map.",
+        "Returns the closest term color that is within the given pixel values.",
+        "Draw a line of pixels",
+        "Returns the directory tree of the project.\n\n @return [Array]",
+        "Search for a single day",
+        "Processes a timeout value.\n\n @param [Numeric] timeout the timeout value to process\n @return [Numeric] the processed timeout value",
+        "Find or create authorization by note",
+        "Send a message to this node\n @param [Symbol] type the type of message to send\n @param [String] payload the payload to send\n @param [Hash] opts the options to pass to the node\n @option opts [Boolean] :with_acknowledge whether to send an acknowledgement\n @option opts [Boolean] :with_payload whether to send a payload\n @option opts [Boolean] :with_response whether to send a response\n @option opts [String] :with_sid whether to send a sid\n @option opts [String] :with_version whether to send a version\n @option opts [String] :with_correlation_id whether to send a correlation id\n @option opts [String] :with_error_code whether to send an error code\n @option opts [String] :with_error_message whether to send an error message\n @option opts [String] :with_timestamp whether to",
+        "Returns the HTML code required to include JQuids in the given view.\n\n The options hash can be used to override the default settings for the\n JQuids widget.\n\n The default settings are:\n\n * <tt>:datepicker_options</tt> - A hash of options to override the default\n   datepicker options for the datepicker widget.\n * <tt>:timepicker_options</tt> - A hash of options to override the default\n   timepicker options for the timepicker widget.\n * <tt>:jquery</tt> - The jQuery version of the jQuery UI library.\n * <tt>:trtp_vrs</tt> - The TRTimepicker version of the jQuery UI library.\n * <tt>:jquery_vrs</tt> - The jQuery version of the jQuery UI library.\n\n The default settings for the datepicker and timepicker are:\n\n * <tt>:show_other_months</tt> - Whether to show other months in the\n   datepicker.\n * <tt>:change_month</tt> - Whether to change month names in the datepicker.\n * <",
+        "Allows the user to set a configuration option.\n\n @example\n   config.option :foo, :string, :default => \"bar\"\n\n @param [String] method\n   The name of the configuration option.\n\n @param [Array] args\n   The arguments to pass to the configuration option.\n\n @param [Proc] block\n   The block to pass to the configuration option.\n\n @return [Object]\n   The value of the configuration option.\n\n @api public",
+        "Returns a string representation of the current date.",
+        "JD for the MCMALQURA date",
+        "Returns the Great Britain date for the given date.",
+        "Add a date to the current date, based on the given period.\n\n The period can be 'y' or 'm' or 'd'.\n\n The offset can be any number between 1 and 31.\n\n The date can be either a Date object or a String.\n\n The date is converted to a String using #jd.\n\n The date is returned as a String.",
+        "Returns the HijriUmmAlqura of the Japanese date plus the given number of days.\n\n If +n+ is a Numeric then the result is returned as a Japanese date.\n\n If +n+ is a String then the result is returned as a String.\n\n If +n+ is nil then nil is returned.",
+        "Raise an exception.\n\n @param [Exception, nil] exception\n   The exception to raise.\n\n @raise [TypeError]\n   If `exception` is not nil or a subclass of `Exception`.\n\n @raise [Complete]\n   If `exception` is a subclass of `Exception` and `complete` is true.\n\n @return nil",
+        "Returns a hash representation of the object",
+        "Sets the site for the API.\n\n @param [String] site The site to set.\n @return [String] The site.",
+        "Find resources by scope and options\n\n @example\n   user = User.find(:all, :limit => 10)\n   user = User.find(:all, :limit => 10, :order => 'name')\n   user = User.find(:all, :order => 'name') { |user| user.name }\n\n @param [Hash] scope\n   scope to find resources\n @param [Hash] options\n   options to find resources\n\n @return [Array<Resource>]\n   list of resources\n\n @api public",
+        "Creates a new resource class for this resource.\n\n Returns the new resource class.",
+        "Run the agent.",
+        "Start the websocket client for the agent",
+        "Fixes the process's own ownership."
+    ],
+    "references": [
+        [
+            "Loads the list of users that are a fan of the current user.\n\n @return [Array<Turntabler::User>]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.fans   # => [#<Turntabler::User ...>, ...]"
+        ],
+        [
+            "Gets the stickers that have been purchased by this user.\n\n @return [Array<Turntabler::Sticker>]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.stickers_purchased   # => [#<Turntabler::Sticker ...>, ...]"
+        ],
+        [
+            "Gets the users that have been blocked by this user.\n\n @return [Array<Turntabler::User>]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.blocks   # => [#<Turntabler::User ...>, ...]"
+        ],
+        [
+            "Updates the user's profile information"
+        ],
+        [
+            "Updates the laptop currently being used"
+        ],
+        [
+            "Sets the user's current status"
+        ],
+        [
+            "Prepares selectors and weights storage\n Analyze input and add appropriate part\n\n Determines if input is word, sentence or passage and adds it\n\n @param [String] input"
+        ],
+        [
+            "Generate weighted-random value\n\n Type is :count, :first, :next or :last\n Group is symbol (for member count or first letter) or string representing letter\n\n @param [Symbol] type\n @param [Symbol|String] group"
+        ],
+        [
+            "Builds a new handler bound to the given event.\n\n @param [String] event The name of the event to bind to\n @param [Hash] options The configuration options\n @option options [Boolean] :once (false) Whether to only call the handler once\n @option options [Hash] :if (nil) Data that must be matched to run\n @raise [ArgumentError] if an invalid option is specified\n Runs this handler for each result from the given event.\n\n @param [Turntabler::Event] event The event being triggered\n @return [Boolean] +true+ if conditions were matched to run the handler, otherwise +false+"
+        ],
+        [
+            "Determines whether the conditions configured for this handler match the\n event data"
+        ],
+        [
+            "Moves the given Storable from its current Position, if any, to this Container at the optional\n coordinate. The default coordinate is the first available slot within this Container.\n The storable Storable position is updated to reflect the new location. Returns self.\n\n @param [Storable] storable the item to add\n @param [CaRuby::Coordinate, <Integer>] coordinate the x-y coordinate to place the item\n @raise [IndexError] if this Container is full\n @raise [IndexError] if the row and column are given but exceed the Container bounds"
+        ],
+        [
+            "Copies this Container's ContainerType capacity, if it exists, to the Container capacity.\n\n @quirk caTissue this method must be called by subclass initializers. The caTissue API\n   does not make the reasonable assumption that the default Container capacity is the\n   ContainerType capacity.\n\n @return [Capacity, nil] the initialized capacity, if any"
+        ],
+        [
+            "Loads the user's current Turntable preferences.\n\n @return [true]\n @raise [Turntabler::Error] if the command fails\n @example\n   preferences.load        # => true\n   preferences.notify_dj   # => false"
+        ],
+        [
+            "Creates a new extractor\n Executes the extractor"
+        ],
+        [
+            "call to receive all teams for a summoner\n @param [Summoner, Fixnum] summoner summoner object or id of a summoner\n @param optional [Hash] optional arguments: :region => replaces default region\n @ return [Array<Team>] An array containing all teams of the given summoner"
+        ],
+        [
+            "Get the document type from the YAML file next to the document.\n\n @param [Pathname] The path to the location of the template.yml file.\n @return [String] the type of the document found in the YAML file."
+        ],
+        [
+            "Creates a new allocator. Options are infile, outfile, key, rows and columns to allocate to key\n Executes the allocator and assigns column values to the key"
+        ],
+        [
+            "Find the span between two Vectors\n\n * *Args*    :\n   - +spanner+ -> Vector\n\n * *Returns* :\n   - Vector"
+        ],
+        [
+            "Gets list of feed_urls, requests each of them and uses the constructor to\n make Feed and Article objects, then calls to the renderers to render\n the page and stylesheets."
+        ],
+        [
+            "Prints configuration file, source, and destination directory to STDOUT."
+        ],
+        [
+            "Provides build time logging information and writes it to STDOUT."
+        ],
+        [
+            "Executes the operation and writes the result to the outfile"
+        ],
+        [
+            "Creates the spread sheet operands for the arithmetic operation"
+        ],
+        [
+            "Publishes the given params to the underlying web socket.  The defaults\n initially configured as part of the connection will also be included in\n the message.\n\n @param [Hash] params The parameters to include in the message sent\n @return [Fixnum] The id of the message delivered"
+        ],
+        [
+            "Publishes the given params to the web socket"
+        ],
+        [
+            "Publishes the given params to the HTTP API"
+        ],
+        [
+            "Callback when a message has been received from the remote server on the\n open socket."
+        ],
+        [
+            "Adds an empty capacity and default dimension labels, if necessary.\n The default +one_dimension_label+ is 'Column' if there is a non-zero dimension capacity, 'Unused' otherwise.\n The default +two_dimension_label+ is 'Row' if there is a non-zero dimension capacity, 'Unused' otherwise.\n\n @quirk JRuby See {#merge_container_type_attributes}. Work-around is that each ContainerType\n   subclass must alias +add_defaults_local+ to this method."
+        ],
+        [
+            "Attempt to connect to port 22 on the host.\n @return +true+\n @raise If it doesn't connect within 1 second.\n @api private"
+        ],
+        [
+            "Copy files or directories to the host.\n @api private"
+        ],
+        [
+            "Write a string to a host file.\n @api private"
+        ],
+        [
+            "Read a host file.\n @api private"
+        ],
+        [
+            "Execute a command on the host and return its output.\n @api private"
+        ],
+        [
+            "Returns true if Storable is a Specimen and supported by this SpecimenArrayType."
+        ],
+        [
+            "Process the aggregation of the key values. The result will be written to\n _outfile_"
+        ],
+        [
+            "Writes the aggration results"
+        ],
+        [
+            "Initializes the sum row title an positions as well as the sum column\n title and position"
+        ],
+        [
+            "Defines casting rules\n @example\n  attributes do\n    string   :first_name\n    string   :last_name\n    integer  :age, optional: true\n  end"
+        ],
+        [
+            "Resolve a set of dependencies +dep_hashes+ from repositories\n +repos+.\n\n @param [Array<Hash>] dep_hashes\n\n @option dep_hash [String] :group_id the groupId of the artifact\n @option dep_hash [String] :artifact_id the artifactId of the artifact\n @option dep_hash [String] :version the version (or range of versions) of the artifact\n @option dep_hash [String] :extension default to 'jar'\n\n @param [Array<String>] repos urls to maven2 repositories\n\n @return [Array<String>] list of files"
+        ],
+        [
+            "Board shouldn't care about game rules"
+        ],
+        [
+            "Parse given arguments\n\n @param [Array] argv"
+        ],
+        [
+            "Clone of an existing bug\n\n Example:\n   # Perform a clone of an existing bug, and return the new bug ID.\n   bz.clone(948970)\n\n @param bug_id [String, Fixnum] A single bug id to process.\n @param overrides [Hash] The properties to change from the source bug. Some properties include\n   * <tt>:target_release</tt> - The target release for the new cloned bug.\n   * <tt>:assigned_to</tt> - The person to assign the new cloned bug to.\n @return [Fixnum] The bug id to the new, cloned, bug."
+        ],
+        [
+            "Provides league information of a summoner\n @param [Summoner, Integer] summoner\n @param optional [Hash] optional arguments: :region => replaces default region\n @return [Array<League>] an array of all leagues the summoner and his teams are in"
+        ],
+        [
+            "Get all entries for the given summoner\n @param [Summoner, Integer] summoner or summoner id\n @param optional [Hash] optional arguments: :region => replaces default region\n @return [Array<LeagueItem>] an array of all entries for that given summoner"
+        ],
+        [
+            "Sets the current user's stickers.\n\n @param [Fixnum] top The y-coordinate of the sticker\n @param [Fixnum] left The x-coordinate of the sticker\n @param [Float] angle The degree at which the sticker is angled\n @return [true]\n @raise [Turntabler::Error] if the command fails\n @example\n   sticker.place(126, 78, -23)   # => true"
+        ],
+        [
+            "From an array of supplied URIs, will request each one and attempt to\n find a feed URI on the page.  If one is found, it will be added to\n an array and returned.\n\n @return [Array]"
+        ],
+        [
+            "Sets the collection status for this SCG.\n If the SCG status is set to +Complete+, then the status of each of the SCG Specimens with\n status +Pending+ is reset to +Collected+.\n\n @param [String] value a permissible SCG status"
+        ],
+        [
+            "Makes a consent status for each registration consent.\n\n @quirk caTissue Bug #156: SCG without consent status displays error.\n   A SCG consent tier status is required for each consent tier in the SCG registration."
+        ],
+        [
+            "Returns the first event in the protocol registered with this SCG."
+        ],
+        [
+            "Returns the collection protocol coordinator. Fetches the CP if necessary and possible.\n Adds defaults to the CP if necessary, which sets a default coordinator if possible.\n\n @return [CaTissue::User] the default receiver"
+        ],
+        [
+            "Decrements this parent's available quantity by the given child's initial quantity, if the specimen types are the same and there\n are the relevant quantities."
+        ],
+        [
+            "Updates the given dependent.\n\n @quirk caTissue 1.2 user address update results in authorization error. Work-around is to\n   create a new address record.\n\n @quirk caTissue Specimen update cascades to child update according to Hibernate, but\n   caTissue somehow circumvents the child update. The child database content is not changed\n   to reflect the update argument. Work-around is to update the child independently after\n   the parent update.\n\n @quirk caTissue The aforementioned {#save_with_template} caTissue collectible event parameters\n   dependent bug implies that the dependent must be saved directly rather than via a cascade\n   from the Specimen or SCG owner to the referenced event parameters. The direct save avoids\n   a tangled nest of obscure caTissue bugs described in the {#save_with_template} rubydoc.\n\n @quirk caTissue A SCG or Specimen consent tier status is not necessarily cascaded.\n @param (see CaRuby::Writer#update_changed_dependent)"
+        ],
+        [
+            "Updates the given user address.\n\n @param [CaTissue::User] the user owner\n @param [CaTissue::Address] the address to update\n @return [CaTissue::User] the updated user"
+        ],
+        [
+            "Adds the specimen position to its save template.\n\n @param [CaTissue::Specimen] specimen the existing specimen with an existing position\n @param template (see #save_with_template)\n @see {#save_with_template}"
+        ],
+        [
+            "Ensures that a primary annotation hook exists.\n\n @param (see #prepare_annotation_for_save)\n @raise [CaRuby::DatabaseError] if the annotation does not reference a hook entity"
+        ],
+        [
+            "The annotation proxy is not copied because the attribute redirects to the hook rather\n than the proxy. Set the template copy source proxy to the target object proxy using\n the low-level Java property methods instead.\n\n @param [Annotation] obj the copy source\n @param [Annotation] template the copy target"
+        ],
+        [
+            "Create the table"
+        ],
+        [
+            "Write table to _outfile_"
+        ],
+        [
+            "Casts a string to an integer or float depending whether the value has a\n decimal point"
+        ],
+        [
+            "Initializes sum_row_pos, sum_row and sum_row_patterns based on the\n provided sum option"
+        ],
+        [
+            "Adds a value in the specified column to the sum_row"
+        ],
+        [
+            "Creates the sum_row when the file has been completely processed"
+        ],
+        [
+            "Used to wrap results from various Enumerable methods that are defined\n to return an array"
+        ],
+        [
+            "Add a new node, causing dependencies to be re-evaluated"
+        ],
+        [
+            "Recurse through node edges"
+        ],
+        [
+            "Gets the rooms where the current user's friends are currently listening.\n\n @return [Array<Turntabler::Room>]\n @raise [Turntabler::Error] if the command fails\n @example\n  rooms.with_friends   # => [#<Turntabler::Room ...>, ...]"
+        ],
+        [
+            "Finds rooms that match the given query string.\n\n @param [String] query The query string to search with\n @param [Hash] options The search options\n @option options [Fixnum] :limit (20) The maximum number of rooms to query for\n @option options [Fixnum] :skip (0) The number of rooms to skip when loading the results\n @return [Array<Turntabler::Room>]\n @raise [ArgumentError] if an invalid option is specified\n @raise [Turntabler::Error] if the command fails\n   rooms.find('indie')   # => [#<Turntabler::Room ...>, ...]"
+        ],
+        [
+            "Loads the attributes for this playlist.  Attributes will automatically load\n when accessed, but this allows data to be forcefully loaded upfront.\n\n @param [Hash] options The configuration options\n @option options [Boolean] minimal (false) Whether to only include the identifiers for songs and not the entire metadata\n @return [true]\n @raise [Turntabler::Error] if the command fails\n @example\n   playlist.load   # => true\n   playlist.songs  # => [#<Turntabler::Song ...>, ...]"
+        ],
+        [
+            "Updates this playlist's information.\n\n @param [Hash] attributes The attributes to update\n @option attributes [String] :id\n @return [true]\n @raise [ArgumentError] if an invalid attribute or value is specified\n @raise [Turntabler::Error] if the command fails\n @example\n   playlist.update(:id => \"rock\")  # => true"
+        ],
+        [
+            "Whether this is the currently active playlist\n\n @return [Boolean]\n @raise [Turntabler::Error] if the command fails\n @example\n   playlist.active   # => true"
+        ],
+        [
+            "Initializes the attribute from given arguments\n and returns new immutable collection with the attribute\n\n @param (see Attribute#initialize)\n\n @return [AttributesDSL::Attributes]"
+        ],
+        [
+            "Adds specimens to this protocol. The argumentes includes the\n specimens to add followed by a Hash with parameters and options.\n If the SCG registration parameter is not set, then a default registration\n is created which registers the given participant to this protocol.\n\n @example\n   protocol.add_specimens(tumor, normal, :participant => pnt, :collector => srg)\n   #=> a new SCG for the given participant with a matched pair of samples\n   #=> collected by the given surgeon.\n\n @param [(<Specimen>, {Symbol => Object})] args the specimens to add followed\n   by the parameters and options hash\n @option args [CaTissue::Participant] :participant the person from whom the\n   specimen is collected\n @return [CaTissue::SpecimenCollectionGroup] the new SCG\n @raise [ArgumentError] if the options do not include either a participant or a registration"
+        ],
+        [
+            "returns a summoner object\n @param name_or_id [Integer, String] name or id of the summoner\n @param optional [Hash] optional arguments: :region => replaces default region\n @ return [Summoner] summoner"
+        ],
+        [
+            "returns the names for the ids\n @param ids [Array<Numeric>] ids\n @param optional [Hash<Symbol, String>] optional arguments: :region => replaces default region\n @return [Hash<Numeric, String>] a hash matching each id to the summoners name"
+        ],
+        [
+            "returns the runebook of a summoner\n @param summoner [Summoner, id] summoner object or id of a summoner\n @param optional [Hash<Symbol, String>] optional arguments: :region => replaces default region\n @return [Runebook] runebook of the summoner"
+        ],
+        [
+            "returns the runebook for multiple summoners\n @param summoners [Array<(Summoner, Integer)>] list of summoner objects or ids of summoners\n @param optional [Hash<Symbol, String>] optional arguments: :region => replaces default region\n @return [Hash<Integer, Runebook>] A hash mapping runebooks to the ids of summoners"
+        ],
+        [
+            "Initialize with the json config.\n Zip the input entries."
+        ],
+        [
+            "Collects and receives this Collectible with the given options.\n\n @param (see #extract_event_parameters)\n @option opts (see #extract_event_parameters)\n @raise [Jinx::ValidationError] if this Collectible has already been received"
+        ],
+        [
+            "Creates a new filter\n Creates the filters based on the given patterns"
+        ],
+        [
+            "Checks whether the values match the boolean filter"
+        ],
+        [
+            "Yields the column value and whether the filter matches the column"
+        ],
+        [
+            "Creates a filter based on the provided rows and columns select criteria"
+        ],
+        [
+            "Adds a single value to the filter"
+        ],
+        [
+            "Adds a single value and an associated type to the filter"
+        ],
+        [
+            "Adds a range to the filter"
+        ],
+        [
+            "Adds a range and the associated types to the filter"
+        ],
+        [
+            "Adds a comparisson filter"
+        ],
+        [
+            "Adds a date filter"
+        ],
+        [
+            "Adds a date range filter"
+        ],
+        [
+            "Adds a number filter"
+        ],
+        [
+            "Adds a number range filter"
+        ],
+        [
+            "Creates a new annotation object in the caTissue database.\n\n @param [CaTissue::Resource] hook the existing static hook object to annotate\n @param [CaTissue::Annotation] annotation the annotation object to create\n @raise [AnnotationError] if the hook object does not have a database identifier"
+        ],
+        [
+            "Joins items in an array together in a grammatically correct manner.\n\n Options:\n * `delimiter` - inserted between items, except for the final two (default: ', ')\n * `final_delimiter` - inserted between the final two items (if > 2), but before the conjunction (default: '')\n * `conjunction` - inserted between the final two items (default: ' and ')"
+        ],
+        [
+            "Format a String for awesome_print display.\n\n @param string [String] the String to format\n @return [String] the formatted String"
+        ],
+        [
+            "ensure meta always will be saved as json instead of json string"
+        ],
+        [
+            "Creates a new Collector\n Execute the collector"
+        ],
+        [
+            "Initializes the collection"
+        ],
+        [
+            "Initialize with default stdout output and verbose false\n Gets the logging object"
+        ],
+        [
+            "Experimental 'require_aether' method for use in irb or just for\n convenience.  Not threadsafe.\n\n @overload require_aether(*coords)\n   @param [Array<String>] coords one or more colon-separated maven coordinate strings\n\n @overload require_aether(*coords, sources)\n   @param [Array<String>] coords one or more colon-separated maven coordinate strings\n   @param [Hash] sources a hash with a key +:source+ or +:sources+\n   and a value of a single string or an array of sources that will be\n   permanently added to the list of sources"
+        ],
+        [
+            "Creates a lookup table from the source file values. The join column of\n the source file is the key"
+        ],
+        [
+            "Initializes the column positions where the source file columns have to\n be inserted. If no column positions are provided the inserted columns\n are put at the beginning of the row"
+        ],
+        [
+            "Initializes joiners based on joins, positions and columns\n\n Possible input forms are:\n joins:: \"4=0;4=1\" or \"4=1\"\n positions:: \"1,2;4,5\" or \"1,2\"\n columns:: \"1,2;3,4\"\n\n This has the semantic of 'insert columns 1 and 2 at positions 1 and 2\n for key 0 and columns 3 and 4 at positions 4 and 5 for key 1. Key 4 is\n the corresponding value in the source file\n\n Return value:: positions where to insert values from source file"
+        ],
+        [
+            "Sets the defaults if necessary. The start date is set to now. The title is\n set to the short title."
+        ],
+        [
+            "Returns a subset of the spread sheet and returns a new spread sheet with\n the result and the corresponding row and column labels"
+        ],
+        [
+            "Collects the operation on each column and returns the result in an array"
+        ],
+        [
+            "Renames the row and column labels\n\n   sheet.rename(rows: ['Row 1', 'Row 2'], cols: ['Col 1', 'Col 2'])\n\n If the provided rows and columns are larger than the spread sheet's rows\n and columns then only the respective row and column values are used. If\n the row and column labels are fewer than the respective row and column\n sizes the old labels are left untouched for the missing new labels"
+        ],
+        [
+            "Prints the spread sheet in a matrix with column labels and row labels. If\n no labels are available the column number and row number is printed"
+        ],
+        [
+            "Creates rows from provided array or file. If array doesn't provide\n equal column sizes the array is extended with NotAvailable values"
+        ],
+        [
+            "If rows are of different column size the rows are equalized in column\n size by filling missing columns with NA"
+        ],
+        [
+            "Checks whether all rows have the same column size. Returns true if\n all columns have the same column size"
+        ],
+        [
+            "Coerces a number or an array to a spread sheet"
+        ],
+        [
+            "Conducts the calculation of this spread sheet with the provided value\n based on the operator. It s is a number or an array it is coerced into\n a spread sheet"
+        ],
+        [
+            "Processes the counting on the in file"
+        ],
+        [
+            "Writes the count results"
+        ],
+        [
+            "Initializes the sum row title an positions as well as the sum column\n title"
+        ],
+        [
+            "Initialize the key columns and headers"
+        ],
+        [
+            "Arrange heading in the original sequence regarding conditional column\n filters"
+        ],
+        [
+            "Processes the filter on the given row"
+        ],
+        [
+            "Gets the private conversation history with this user.\n\n @return [Array<Turntabler::Message>]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.messages   # => [#<Turntabler::Message ...>, ...]"
+        ],
+        [
+            "Gets the location of the user.\n\n @note This will make the current user a fan of this user\n @return [Turntabler::Room]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.stalk    # => #<Turntabler::Room ...>"
+        ],
+        [
+            "Boots the user for the specified reason.\n\n @param [String] reason The reason why the user is being booted\n @return [true]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.boot('Broke rules')    # => true"
+        ],
+        [
+            "Reports abuse by a user.\n\n @param [String] reason The reason the user is being reported\n @return [true]\n @raise [Turntabler::Error] if the command fails\n @example\n   user.report('Verbal abuse ...')  # => true"
+        ],
+        [
+            "Returns characteristics to use for a derived specimen. The new characteristics is copied from this\n parent specimen's characteristics, without the identifier.\n\n @return [CaTissue::SpecimenCharacteristics, nil] a copy of this Specimen's specimen_characteristics, or nil if none"
+        ],
+        [
+            "Set the maps region\n\n * *Args*    :\n    region = CoordinateRegion.new([56, 10.6], [3.1, 3.1])\n    region = {:region => CoordinateRegion.new([56, 10.6], [3.1, 3.1]), :animated => false}"
+        ],
+        [
+            "Returns the collection site for which this participant has a MRN. If there is not exactly one\n such site, then this method returns nil. This method is a convenience for the common situation\n where a participant is enrolled at one site.\n\n @return [CaTissue::Site] the collection site"
+        ],
+        [
+            "Returns whether this SpecimenRequirement characteristics matches the other SpecimenRequirement characteristics\n on the tissue site and tissue side."
+        ],
+        [
+            "Returns the first SCG CP coordinator, if any."
+        ],
+        [
+            "Export translations to JavaScript, considering settings\n from configuration file"
+        ],
+        [
+            "Convert translations to JSON string and save file."
+        ],
+        [
+            "Initialize and return translations"
+        ],
+        [
+            "Loads the caTissue classpath and connection properties."
+        ],
+        [
+            "Parse the vatsim data file and store output as necessary"
+        ],
+        [
+            "Initialize the system by downloading status and vatsim data files"
+        ],
+        [
+            "Download a url to a file path"
+        ],
+        [
+            "Return random vatsim data url from status file"
+        ],
+        [
+            "=> Clear Cache"
+        ],
+        [
+            "=> Define JSON Writer"
+        ],
+        [
+            "=> Check if a string is an existing file, and return it's content"
+        ],
+        [
+            "=> Return Common Elements of an Array"
+        ],
+        [
+            "Initialize a new EventListener daemon instance\n @param [Hash] options daemon options\n @option options [Integer] :error_limit (10) maximum number of errors that are allowed to occur within error_interval\n   before the process terminates\n @option options [Integer] :error_interval (3600) time interval, in seconds, before the error counter is cleared\n @option options [String] :events_exchange ('events') name of AMQP exchange used for listening to event messages\n @option options [String] :models_exchange ('models') name of AMQP exchange used for listening to EventObserver\n   instance create, update, and destroy messages\n @option options [String] :name (\"#{Rails.application.class.parent_name.downcase}-listener\") daemon instance name.\n Run the daemon process. This creates the event, error counter, and shutdown threads"
+        ],
+        [
+            "Register the observer class watcher"
+        ],
+        [
+            "Register an observer instance, and start listening for events on its associated queue.\n Also ensure that we are listening for observer class update events"
+        ],
+        [
+            "Unregister an observer instance, and cancel consumption of messages. Any pre-fetched messages will be returned to the queue."
+        ],
+        [
+            "Create or return the observer queue which listens for ModelWatcher events"
+        ],
+        [
+            "Return hash of data to be serialized to JSON\n @option options [Boolean] :omit_parameters when set, do not include attributes or parameters in data\n @return [Hash] data to serialize"
+        ],
+        [
+            "action is a string, either 'post' or 'draft'"
+        ],
+        [
+            "action is a string, either 'publish' or 'unpublish'"
+        ],
+        [
+            "pass a string, either publish or unpublish"
+        ],
+        [
+            "Resolves relative links to Markdown files.\n @param [String] text the HTML fragment in which to resolve links.\n @return [String] HTML with relative links to Markdown files converted to `{file:}` links."
+        ],
+        [
+            "=> Build the HTTP Connection"
+        ],
+        [
+            "=> Add an Entitity to an Existing Alert Policy"
+        ],
+        [
+            "=> Delete an Entitity from an Existing Alert Policy"
+        ],
+        [
+            "=> Get a Server based on ID"
+        ],
+        [
+            "=> Get a Server based on Name"
+        ],
+        [
+            "=> List the Servers with a Label"
+        ],
+        [
+            "Create or attach to a queue on the specified exchange. When an event message that matches the observer's routing keys\n is received, parse the event and call handle_event on same.\n @param [Isimud::Client] client client instance\n @return queue or consumer object\n @see BunnyClient#subscribe\n @see TestClient#subscribe"
+        ],
+        [
+            "Initialize a new BunnyClient instance. Note that a connection is not established until any other method is called\n\n @param [String, Hash] _url Server URL or options hash\n @param [Hash] _bunny_options optional Bunny connection options\n @see Bunny.new for connection options\n Convenience method that finds or creates a named queue, binds to an exchange, and subscribes to messages.\n If a block is provided, it will be called by the consumer each time a message is received.\n\n @param [String] queue_name name of the queue\n @param [String] exchange_name name of the AMQP exchange. Note that existing exchanges must be declared as Topic\n   exchanges; otherwise, an error will occur\n @param [Array<String>] routing_keys list of routing keys to be bound to the queue for the specified exchange.\n @yieldparam [String] payload message text\n @return [Bunny::Consumer] Bunny consumer interface"
+        ],
+        [
+            "Find or create a named queue and bind it to the specified exchange\n\n @param [String] queue_name name of the queue\n @param [String] exchange_name name of the AMQP exchange. Note that pre-existing exchanges must be declared as Topic\n   exchanges; otherwise, an error will occur\n @param [Hash] options queue declaration options\n @option options [Boolean] :queue_options ({durable: true}) queue declaration options -- @see Bunny::Channel#queue\n @option options [Array<String>] :routing_keys ([]) routing keys to be bound to the queue. Use \"*\" to match any 1 word\n   in a route segment. Use \"#\" to match 0 or more words in a segment.\n @return [Bunny::Queue] Bunny queue"
+        ],
+        [
+            "Subscribe to messages on the Bunny queue. The provided block will be called each time a message is received.\n   The message will be acknowledged and deleted from the queue unless an exception is raised from the block.\n   In the case that an uncaught exception is raised, the message is rejected, and any declared exception handlers\n   will be called.\n\n @param [Bunny::Queue] queue Bunny queue\n @param [Hash] options {} subscription options -- @see Bunny::Queue#subscribe\n @yieldparam [String] payload message text"
+        ],
+        [
+            "Open a new, thread-specific AMQP connection channel, or return the current channel for this thread if it exists\n   and is currently open. New channels are created with publisher confirms enabled. Messages will be prefetched\n   according to Isimud.prefetch_count when declared.\n @return [Bunny::Channel] channel instance."
+        ],
+        [
+            "Publish a message to the specified exchange, which is declared as a durable, topic exchange. Note that message\n   is always persisted.\n @param [String] exchange AMQP exchange name\n @param [String] routing_key message routing key. This should always be in the form of words separated by dots\n   e.g. \"user.goal.complete\"\n @param [String] payload message payload\n @param [Hash] options additional message options\n @see Bunny::Exchange#publish\n @see http://rubybunny.info/articles/exchanges.html"
+        ],
+        [
+            "Generate a timestamped post"
+        ],
+        [
+            "Generate a non-timestamped draft"
+        ],
+        [
+            "Todo make this take a path instead?\n\n @param draftpath [String] path to the draft, relative to source directory\n @option options :keep_draft [Boolean] if true, keep the draft file\n @option options :keep_timestamp [Boolean] if true, don't change the timestamp"
+        ],
+        [
+            "0000002\n thanks google for all of this"
+        ],
+        [
+            "had to convert these from C... fun"
+        ],
+        [
+            "Override functionality from CanCan to allow objects to masquerade as other objects"
+        ],
+        [
+            "=> Daemonization for Periodic Management"
+        ],
+        [
+            "=> Run the Application"
+        ],
+        [
+            "Check for a _posts directory in current directory. If there's not one,\n check for a _config.yml and look for a custom src directory.  If we\n don't find one, puke an error message and die. If we do, return the name\n of the directory"
+        ],
+        [
+            "Get a layout as a string. If layout_path is non-nil,  will open that\n file and read it, otherwise will return a default one, and a file\n extension to use"
+        ],
+        [
+            "Print a usage message and exit"
+        ],
+        [
+            "=> Primary Notification Message Controller"
+        ],
+        [
+            "=> OS X Cocoa Messages"
+        ],
+        [
+            "Analyses a string +string+. Returns an array of analysed\n strings if the string is accepted, or an empty array if not.\n\n ==== Options\n * +symbol_sequence+ - Return each analysis as a sequence of symbols.\n   Multicharacter symbols will be strings on the form +<symbol>+."
+        ],
+        [
+            "Generates a string +string+. Returns an array of generated\n strings if the string is accepted or an empty array if not."
+        ],
+        [
+            "=> Configure the CLI"
+        ],
+        [
+            "Parse the specs on the given file path and return those\n that have not been fulfilled or need to be updated.\n\n @param [String] path target file path\n @return [<Spectro::Spec>] collection of specs not fulfilled or out of date"
+        ],
+        [
+            "=> Remove Non-Reporting Servers"
+        ],
+        [
+            "=> Find Servers which should be excluded from Management"
+        ],
+        [
+            "Sends an SMS validation request through the gateway"
+        ],
+        [
+            "Begins a phone call to the user where they'll need to type\n their confirmation code"
+        ],
+        [
+            "Validate data against provided format"
+        ],
+        [
+            "Initiates a new session\n @see XFTP::Validator::Settings"
+        ],
+        [
+            "Performs a search for geo-attributes.\n\n @param [String] table the table to search\n @param [String] field_name the field/column to search in the given table\n @param [String] value string value to search in the given field and table\n @return [Hash] search results"
+        ],
+        [
+            "Adjuster Builders\n Apply adjuster when passed condition.\n @param condition [Proc, Method, #===]\n @param adjuster [Proc, #to_proc]\n @return [lambda]"
+        ],
+        [
+            "Sequencial apply all adjusters.\n @param adjuster1 [Proc, #to_proc]\n @param adjuster2 [Proc, #to_proc]\n @param adjusters [Proc, #to_proc]\n @return [lambda]"
+        ],
+        [
+            "Accept any parser when that resopond to parse method.\n @param parser [#parse]\n @return [lambda]"
+        ],
+        [
+            "return the class match by name"
+        ],
+        [
+            "Make a lazy connection."
+        ],
+        [
+            "Calculate the desired time to wake up.\n @api private\n @param start_time [nil,Time] time when the thread is put to sleep\n @param timeout [Numeric] desired time to sleep in seconds, +nil+ for forever\n @raise [TypeError] if +start_time+ is not +nil+ or a +Numeric+\n @raise [ArgumentError] if +start_time+ is negative\n @return [Time]"
+        ],
+        [
+            "Display CRUD icons or links, according to setting in use_crud_icons method.\n\n In application_helper.rb:\n\n   def use_crud_icons\n     true\n   end\n\n Then use in index views like this:\n\n <td class=\"crud_links\"><%= crud_links(my_model, 'my_model', [:show, :edit, :delete]) -%></td>"
+        ],
+        [
+            "Create a link that is opaque to search engine spiders."
+        ],
+        [
+            "Wraps the given HTML in Rails' default style to highlight validation errors, if any."
+        ],
+        [
+            "Use on index pages to create dropdown list of filtering criteria.\n Populate the filter list using a constant in the model corresponding to named scopes.\n\n Usage:\n\n - item.rb:\n\n     scope :active,   :conditions => { :is_active => true }\n     scope :inactive, :conditions => { :is_active => false }\n\n     FILTERS = [\n       {:scope => \"all\",       :label => \"All\"},\n       {:scope => \"active\",    :label => \"Active Only\"},\n       {:scope => \"inactive\",  :label => \"Inactive Only\"}\n     ]\n\n - items/index.html.erb:\n\n     <%= select_tag_for_filter(\"items\", @filters, params) -%>\n\n - items_controller.rb:\n\n     def index\n       @filters = Item::FILTERS\n       if params[:show] && params[:show] != \"all\" && @filters.collect{|f| f[:scope]}.include?(params[:show])\n         @items = eval(\"@items.#{params[:show]}.order_by(params[:by], params[:dir])\")\n       else\n         @items = @items.order_by(params[:by], params[:dir])\n       end\n       ...\n     end"
+        ],
+        [
+            "Returns a link_to tag with sorting parameters that can be used with ActiveRecord.order_by.\n\n To use standard resources, specify the resources as a plural symbol:\n   sort_link(:users, 'email', params)\n\n To use resources aliased with :as (in routes.rb), specify the aliased route as a string.\n   sort_link('users_admin', 'email', params)\n\n You can override the link's label by adding a labels hash to your params in the controller:\n   params[:labels] = {'user_id' => 'User'}"
+        ],
+        [
+            "Create a set of tags for displaying a field label with inline help.\n Field label text is appended with a ? icon, which responds to a click\n by showing or hiding the provided help text.\n\n Sample usage:\n\n   <%= tag_for_label_with_inline_help 'Relative Frequency', 'rel_frequency', 'Relative frequency of search traffic for this keyword across multiple search engines, as measured by WordTracker.' %>\n\n Yields:\n\n   <label for=\"rel_frequency\">Relative Frequency: <%= image_tag \"/images/help_icon.png\", :onclick => \"$('rel_frequency_help').toggle();\", :class => 'inline_icon' %></label><br />\n   <div class=\"inline_help\" id=\"rel_frequency_help\" style=\"display: none;\">\n     <p>Relative frequency of search traffic for this keyword across multiple search engines, as measured by WordTracker.</p>\n   </div>"
+        ],
+        [
+            "wrapper of keyboard operations"
+        ],
+        [
+            "standard open file dialog"
+        ],
+        [
+            "Return a structure describing the options."
+        ],
+        [
+            "Add new path to the gitattributes file"
+        ],
+        [
+            "Runs the migration.\n\n   MyMigration.new.run"
+        ],
+        [
+            "List parents, closest to furthest.\n\n This is a recursive, expensive call."
+        ],
+        [
+            "Extract text out of HTML or plain strings. Basically removes html\n formatting.\n\n @param attributes [Symbol, String]\n   variable list of attributes or methods to be extracted for search\n\n @return [String] content of each attribute separated by new lines"
+        ],
+        [
+            "Build query attribute hash.\n\n Internally stored as JSONB.\n\n @return [Hash] to be set for query attribute"
+        ],
+        [
+            "Get the WebSocket API URI\n\n @return [String] uri"
+        ],
+        [
+            "Parse the configuration file"
+        ],
+        [
+            "Do additional sanity checking on a hook script"
+        ],
+        [
+            "Get all the host IDs and FQDNs and populate the host table"
+        ],
+        [
+            "Initialize an empty database"
+        ],
+        [
+            "Update the database based on the foreman_hook"
+        ],
+        [
+            "Transform and read a list attribute"
+        ],
+        [
+            "Transform and read a hash attribute"
+        ],
+        [
+            "Transform and write a standard attribute value"
+        ],
+        [
+            "Transform and write a list value"
+        ],
+        [
+            "Transform and write a hash attribute"
+        ],
+        [
+            "Update fields without hitting the callbacks"
+        ],
+        [
+            "Controller helper method to filter out non-authorized\n objects from the passed in array\n\n @param method [Symbol] method to be called on each policy\n @param objects [Array] array of objects to filter\n @param user [User] The current user object to pass\n @return (Array)\n\n @visibility public"
+        ],
+        [
+            "Helper method available in controllers and views\n that returns the value of the policy method\n\n @param (see #authorize!)\n @return (Boolean)\n\n @visibility public"
+        ],
+        [
+            "shows statistics about difficulty and network power\n\n /nethash/INTERVAL/START/STOP\n Default INTERVAL=500, START=0, STOP=infinity.\n\n See http://dogechain.info/chain/Dogecoin/q/nethash"
+        ],
+        [
+            "Find the first saved record\n @note `last` uses a sorted set as an index of `ids` and finds the highest id.\n @param limit [Integer] returns one or many\n @param offset [Integer] from the end of the index, back\n @return [Base, Array]"
+        ],
+        [
+            "Find a record by `id`\n @param ids [Integer, Array<Integer>] of the record(s) to lookup.\n @return [Base, Array] matching records"
+        ],
+        [
+            "Iterate over all records in batches\n @param options [Hash] accepts options\n   `:start` to offset from the beginning of index,\n   `:batch_size` the size of the batch, default is 500.\n @param &block [Proc] passes each batch of articles to the Proc."
+        ],
+        [
+            "Lazy loader..."
+        ],
+        [
+            "Returns the deserialized mapped key when provided with the former key.\n\n  mapped_key(:products, 2)"
+        ],
+        [
+            "Number of processors seen by the OS and used for process scheduling.\n\n * AIX: /usr/sbin/pmcycles (AIX 5+), /usr/sbin/lsdev\n * BSD: /sbin/sysctl\n * Cygwin: /proc/cpuinfo\n * Darwin: /usr/bin/hwprefs, /usr/sbin/sysctl\n * HP-UX: /usr/sbin/ioscan\n * IRIX: /usr/sbin/sysconf\n * Linux: /proc/cpuinfo\n * Minix 3+: /proc/cpuinfo\n * Solaris: /usr/sbin/psrinfo\n * Tru64 UNIX: /usr/sbin/psrinfo\n * UnixWare: /usr/sbin/psrinfo"
+        ],
+        [
+            "Number of physical processor cores on the current system."
+        ],
+        [
+            "end def run"
+        ],
+        [
+            "Reload the events from the event file. Existing events are\n deleted first."
+        ],
+        [
+            "see if this model is followee of some model\n\n Example:\n   >> @ruby.followee_of?(@jim)\n   => true"
+        ],
+        [
+            "see model's followed history\n\n Example:\n   >> @ruby.ever_followed\n   => [@jim]"
+        ],
+        [
+            "Puts this thread to sleep until another thread resumes it.\n Threads will be woken in the chronological order that this was called.\n @note Will block until resumed\n @param mutex [Mutex] mutex to be unlocked while this thread is sleeping\n @param timeout [nil,Numeric] maximum time to sleep in seconds, +nil+ for forever\n @raise [TypeError] if +timeout+ is not +nil+ or +Numeric+\n @raise [ArgumentError] if +timeout+ is negative\n @raise [Exception] any exception raised by +::ConditionVariable#wait+ (eg. interrupts, +ThreadError+)\n @return [self]"
+        ],
+        [
+            "Validates a timeout value\n @api private\n @param timeout [nil,Numeric]\n @raise [TypeError] if +timeout+ is not +nil+ or +Numeric+\n @raise [ArgumentError] if +timeout+ is negative\n @return [void]"
+        ],
+        [
+            "render the template including the handler as a local"
+        ],
+        [
+            "this call initiates a race resistant attempt to make sure that there is only 1\n clear 'winner' among N potential agents attempting to run the same goal on the\n same spreadsheet agent's cell"
+        ],
+        [
+            "you have the option of picking from many cards, pick the best one."
+        ],
+        [
+            "This method is called if your hand is over the hand limit, it returns the card that you would like to discard.\n Returning nil or a card you don't have is a very bad idea. Bad things will happen to you."
+        ],
+        [
+            "This is the method that is called on your turn."
+        ],
+        [
+            "Releases the lock and puts this thread to sleep.\n @param timeout [nil, Numeric] time to sleep in seconds or +nil+ to sleep forever\n @raise [TypeError] if +timeout+ is not +nil+ or +Numeric+\n @raise [ArgumentError] if +timeout+ is not positive\n @return [Integer] elapsed time sleeping"
+        ],
+        [
+            "Temporarily unlocks it while a block is run.\n If an error is raised in the block the it will try to be immediately relocked\n   before passing the error up. If unsuccessful, a +ThreadError+ will be raised to\n   imitate the core's behavior.\n @api private\n @raise [ThreadError] if relock unsuccessful after an error\n @raise [ArgumentError] if no block given\n @return [void]"
+        ],
+        [
+            "Calculate time elapsed when running block.\n @api private\n @yield called while running timer\n @yieldparam start_time [Time]\n @raise [Exception] any exception raised in block\n @return [Float] time elapsed while running block"
+        ],
+        [
+            "stalls test until ^C is hit\n useful for inspecting page state via firebug"
+        ],
+        [
+            "Makes a call to a block that accepts optional arguments"
+        ],
+        [
+            "Extracts the rdoc of a given ruby file source."
+        ],
+        [
+            "Add select method to select the fields to return"
+        ],
+        [
+            "Sets the pagination info"
+        ],
+        [
+            "Pass in a hash that's been encoded as JSON and then Base64."
+        ],
+        [
+            "see if this model is follower of some model\n\n Example:\n   >> @jim.follower_of?(@ruby)\n   => true"
+        ],
+        [
+            "follow some model"
+        ],
+        [
+            "unfollow some model"
+        ],
+        [
+            "see user's follow history\n\n Example:\n   >> @jim.ever_follow\n   => [@ruby]"
+        ],
+        [
+            "Retrieves an item from it.\n @note If it is empty, the method will block until an item is available.\n If +non_block+ is +true+, a +ThreadError+ will be raised.\n @raise [ThreadError] if it is empty and +non_block+ is +true+\n @param non_block [Boolean]\n @return [Object]"
+        ],
+        [
+            "Initialize can accept custom configuration parameters\n Lookup for a specific service `key`\n passed block is called with the result values\n in case of `http` backend it return the result directly\n @param key [string] identifier of the service"
+        ],
+        [
+            "Announce a specific service `key` available on specific `port`\n passed block is called when the announce is sent\n @param key [string] service identifier\n @param port [int] service port number\n @block callback"
+        ],
+        [
+            "Condition Builders\n A innner method for some condition builders.\n For build conditions AND, NAND, OR, NOR, XOR, XNOR.\n @param delegated [Symbol]\n @return [lambda]"
+        ],
+        [
+            "Post to the given path, including the correct signature header based on the payload and secret.\n @param [Hash] opts The options to use when crafting the request.\n @option opts [String] :path The full path of the endpoint to which to post\n @option opts [String] :payload A JSON-parseable string containing a payload as described in http://developer.github.com/v3/activity/events/types/\n @option opts [String] :secret The secret to use when calculating the HMAC for the X-Hub-Signature header"
+        ],
+        [
+            "Finds height of the image relative to provided width"
+        ],
+        [
+            "Iterates over each pixel of resized image to find closest color"
+        ],
+        [
+            "Iterates over the palette to find the most similar color"
+        ],
+        [
+            "Takes in a string of colors and puts them out as background colored spaces\n For example, \"rGK\" creates a light_red square, a green square, and a black square"
+        ],
+        [
+            "build a depth first tree"
+        ],
+        [
+            "Returns APOD info for specified day.\n\n @see https://api.nasa.gov/api.html#apod\n @rate_limited Yes https://api.nasa.gov/api.html#authentication\n @image_permissions http://apod.nasa.gov/apod/lib/about_apod.html#srapply\n @authentication optional NASA api key https://api.nasa.gov/index.html#apply-for-an-api-key\n @option options [String] :api_key Optional. Uses DEMO_KEY as default.\n @option options [String] :date Optional. Returns the APOD results for\n the given date. Date should be formatted as YYYY-MM-DD. Defaults as today.\n @return [NasaApod::SearchResults] Return APOD post for a specified date."
+        ],
+        [
+            "Validates a timeout value, converting to a acceptable value if necessary\n @api private\n @param timeout [nil,Numeric]\n @raise [TypeError] if +timeout+ is not +nil+ or +Numeric+\n @raise [ArgumentError] if +timeout+ is negative\n @return [nil,Numeric]"
+        ],
+        [
+            "If there is already an authorization by this note, use it; otherwise create it"
+        ],
+        [
+            "Initialize passing configuration\n Send a message to grape"
+        ],
+        [
+            "Includes the stylesheets and javescripts into what ever view this is\n called to.\n\n By adding a :datepicker_options hash the options hash, you can change the\n defaults styles that are intially applied to all datepicker instances.\n Those defaults can be overwritten by each instance of the datepicker.\n\n To not include the style sheet into the layout, just pass :style => :none\n (false or nil will also work)"
+        ],
+        [
+            "Initialize an empty OpenStruct to hold configuration options\n To set a config option call the corresponding method with an argument.\n To retrieve a config option call the corresponding method without an argument."
+        ],
+        [
+            "constructor\n return hijri date with month and day names"
+        ],
+        [
+            "Hijri to julian"
+        ],
+        [
+            "Hijri to gregorian"
+        ],
+        [
+            "Add Days - Weeks - Months - Years"
+        ],
+        [
+            "comparison operator\n return hijri date plus n days"
+        ],
+        [
+            "Sets it to an error.\n @raise [Complete] if the it has already completed\n @param exception [nil,Object] +Exception+ class or instance to set, otherwise a +StandardError+ will be set\n @return [void]"
+        ],
+        [
+            "Transform the ruby obj ->  to a Hash"
+        ],
+        [
+            "sets the site for the class in which this module is extended"
+        ],
+        [
+            "def all_attributes_set?\n   site && user && password\n end\n routes to active resource find"
+        ],
+        [
+            "creates an active resource class dynamically. All the attributes are set automatically. Avoid calling\n this method directly"
+        ],
+        [
+            "Run the agent app!\n\n This is the main method. Will boot and configure the agent, connect to the\n server and start the daemon."
+        ],
+        [
+            "Open the WebSocket channel with the Manager\n\n NOTE: this call will not return!"
+        ],
+        [
+            "If running as root, fix ownership of var and etc dirs"
+        ]
+    ]
+}
