@@ -1,0 +1,2021 @@
+{
+    "accuracy": 0,
+    "bleu": {
+        "bleu": 0.06047166072335644,
+        "precisions": [
+            0.28245787908820613,
+            0.09086908690869087,
+            0.034857849196538934,
+            0.014946418499717992
+        ],
+        "brevity_penalty": 1.0,
+        "length_ratio": 1.0948350694444444,
+        "translation_length": 5045,
+        "reference_length": 4608
+    },
+    "codebleu": 0,
+    "preds": [
+        "How to force os.kill() to use os.system() instead of os.system() in python",
+        "Python: How to convert a hex string to a byte string?",
+        "How to check if all elements in a list match a condition?",
+        "How to print multiple arguments in python?",
+        "Python: How to convert a unicode to a string?",
+        "Converting a dictionary to a list of tuples",
+        "How to filter a dictionary in Python?",
+        "How to get output of bash command in python",
+        "Python: How to remove all duplicate characters from a string?",
+        "How to compare two dataframes for intersection?",
+        "MITM proxy over SSL hangs on wrap_socket with client",
+        "How to convert a date string to a date object in python?",
+        "How to split a string at the end of a line?",
+        "How to split a string into tokens?",
+        "Python: How to convert list of tuples to string?",
+        "Django - How to filter objects by date range?",
+        "Summing 2D arrays in numpy",
+        "How to disable warnings in Python?",
+        "How to print a list of tuples in python?",
+        "How to call python.exe with -m flag in it",
+        "Convert date format python",
+        "Converting string to float",
+        "Converting string to float",
+        "Python: How to add a directory to the path of a python script?",
+        "Python regular expression split word boundary",
+        "How to read a file in other directory in python?",
+        "How to download a file via HTTP with urllib.request",
+        "Downloading file with Python",
+        "How to get the content of a website in python?",
+        "How to get a response with the Python requests library?",
+        "How to download a large file in python",
+        "Python: How to set environment variables",
+        "Remove specific items from a dictionary in python",
+        "How to merge two pandas dataframes with the same index?",
+        "How to split a string into words that do not contain spaces?",
+        "How to get user input without entering anything?",
+        "How to run a debug app in Python with flask-appbuilder?",
+        "Python pickle/unpickle a list of tuples",
+        "How to swap the first and the last row of a numpy array?",
+        "Create a numpy array of zeros",
+        "Remove all whitespace in a string",
+        "Converting a 2D array to a 3D array in numpy",
+        "Python: Sum values in a list of dictionaries",
+        "How to convert a hex string to a float number",
+        "Python: adding two dictionaries's values",
+        "How to make a shell command synchronous?",
+        "Python: How to remove all whitespace in a string?",
+        "How to convert list of tuples to a string in Python?",
+        "Reverse a list of tuples",
+        "How to remove all the spaces in a string in Python?",
+        "Remove all whitespace in a string",
+        "Python datetime to string with microsecond component",
+        "Python: How to get day of week in a given date?",
+        "How to get yesterday in python",
+        "Summing 2D arrays in Python",
+        "Summing 2nd list items in a list of lists of lists",
+        "How to base64 encode a string in Python?",
+        "Python: How to convert a list of dicts into a dictionary?",
+        "Convert a list of dictionaries into a dictionary of lists",
+        "How to get arguments from a URL in Python?",
+        "How to get all keys in a dictionary that have a specific value?",
+        "Python: How to import a module in a python script?",
+        "Python: How to add directory to python search path?",
+        "How to use variables in SQL statement in Python?",
+        "Python: How to filter a list of images in a menu?",
+        "How to extend a dictionary in Python?",
+        "How to add multiple lists to a list of tuples in python?",
+        "How to save Pandas DataFrame with multiple columns?",
+        "How to write a pandas DataFrame with multiple columns to a file?",
+        "How to get the first element of each row in a list in Python?",
+        "How to get the first element of each tuple in a list?",
+        "How to download a file through FTP with Python FTP",
+        "How to set value of a checkbox in python web browser",
+        "Python: Finding the largest element in a list of tuples",
+        "Add to integers in a list",
+        "check whether a file exists",
+        "list all files of a directory",
+        "How to generate a list of random integers with the same seed?",
+        "Python datetime to string in Python",
+        "How to use a variable in SQL in Python?",
+        "How to check if any value in a column in pandas is in a substring?",
+        "How to print a table with multiple columns in python?",
+        "Pandas: how to drop rows of a pandas dataframe?",
+        "Python: How to format variables in string format?",
+        "Python: How to get all the values of a specific key in a dictionary?",
+        "Python: How to get all the values of a variable in a list of tuples?",
+        "How to convert list of integers into a list of strings in Python?",
+        "Python: How to convert list of dicts into string?",
+        "How to convert list of integers into a list of strings in Python?",
+        "append to a file",
+        "Remove all non-alphabet chars from a string",
+        "Python regex replace",
+        "Summing 2D arrays in Pandas",
+        "How to use regular expression to match a file name?",
+        "Splitting a string into words and punctuation",
+        "How to get the text before the closing bracket in Python?",
+        "How to close a file in python",
+        "How to convert a string of date parts into a datetime object?",
+        "How to find the index of an item in a list of tuples?",
+        "How to remove all non-alphanumeric characters from a string in Python?",
+        "How to remove all whitespace in a string in Python?",
+        "How to plot two-dimensional array in matplotlib?",
+        "How to plot two-dimensional arrays in matplotlib?",
+        "How to remove all elements in a list that are not in a list in Python?",
+        "Creating an empty list",
+        "Creating an empty list",
+        "Python Selenium: Find object attributes using css selector",
+        "How to merge two dataframes with the same index?",
+        "Python: how to check if string starts with a number?",
+        "How to split a string at the beginning of a word?",
+        "Create directory if it doesn't exist",
+        "Create a directory if it doesn't exist",
+        "How to create a directory in Python without overwriting an existing directory",
+        "Create a directory if it doesn't exist",
+        "How to remove all whitespace in a string in Python?",
+        "Remove all non-alphanumeric characters from a string",
+        "How to remove all non-alphanumeric characters from a string in Python?",
+        "How to get text from BeautifulSoup",
+        "Python: Convert a list of dictionaries into a dictionary",
+        "Concatenating 2D arrays in NumPy",
+        "Converting a 2D array to a 3D array in numpy",
+        "check whether a file exists",
+        "How to count the number of values in a list that contain a certain word?",
+        "get the number of values in a dictionary",
+        "How to count the number of elements in a list that contain a certain value in python?",
+        "Python: How to count the number of occurrences of an item in a dictionary?",
+        "How to count the number of values associated with a specific key in Python dictionary?",
+        "copying a file",
+        "Find the key with the largest value in a dictionary in Python",
+        "How to check if all keys in a dictionary are in another dictionary?",
+        "Find the key with the largest value in a dictionary in Python",
+        "seek to the beginning of a file",
+        "How to remove all null values in a pandas dataframe",
+        "Delete an element from a dictionary",
+        "How to add a timedelta to a Django model object?",
+        "How to get the value of a variable in a python dictionary?",
+        "How to generate random strings of a specific length in Python?",
+        "How to check if all values in a column of a pandas dataframe are in the same row?",
+        "How to remove duplicate items from a list in python?",
+        "Convert list to tuple",
+        "How to convert a list of tuples into a list of level 1 tuples?",
+        "How to print a table with the same name of a file in Python?",
+        "Select rows from a DataFrame based on values in a column in pandas",
+        "Select only rows from a DataFrame based on the values in a column in pandas",
+        "Converting a Pandas DataFrame to List of Strings",
+        "Converting a Pandas DataFrame to List of Strings",
+        "Change current working directory in python",
+        "How to use variables in SQL statement in Python?",
+        "How to convert a unicode to a string literal python",
+        "Python: How to decode a string literal with utf-8?",
+        "Python: How to convert a unicode string to a byte string?",
+        "Python: How to use regular expression to separate numbers and characters in strings like \"30d\"",
+        "Plotting a multidimensional array in matplotlib",
+        "Plotting a multidimensional array with matplotlib",
+        "How to get the content of a div using BeautifulSoup?",
+        "Select rows from a DataFrame based on values in a column in pandas",
+        "Pandas: how to reset index of a column in pandas?",
+        "Pandas: how to remove duplicate rows from index?",
+        "Pandas: how to reset index of a dataframe?",
+        "Python: How to get the last element of a list?",
+        "Converting a list of tuples to a numpy array",
+        "Converting 2D array to 3D array in numpy",
+        "Python: How to convert a list of ints to a string?",
+        "POST Request to API using Python Requests",
+        "string find",
+        "How to get all elements between two numbers in a list?",
+        "Python: How to get all the values of a list in a dictionary?",
+        "How to get only the last part of a path in Python?",
+        "Python: How to get a list of indices of the sub-lists of a list of lists?",
+        "Python: Sum values in a list of lists",
+        "Select rows from a DataFrame based on values in a column in pandas",
+        "How to remove line breaks in pandas dataframe",
+        "How to remove line breaks in pandas dataframe",
+        "Add two lists into a list of tuples python",
+        "Python: How to add two lists to each element in each list?",
+        "How to get all sub-domains of a URL?",
+        "How to use regular expression to separate URLs in Python?",
+        "Remove specific characters from a string",
+        "How to set the date range for a pandas dataframe",
+        "Create a 2D array of arrays in Python",
+        "How to remove all the punctuation in a string?",
+        "Find current directory and file's directory",
+        "Python: How to remove all whitespace in a string?",
+        "How to get the extension of a file's full path?",
+        "Summing 2D arrays in Python",
+        "Python: How to split a file path into components?",
+        "How to generate random numbers that are different?",
+        "Pandas: How to remove column by index in pandas?",
+        "How to get the index of a value in a dictionary in Python?",
+        "How to check if all elements of a list match a condition?",
+        "get file count",
+        "How to get the value of a column in SQLAlchemy's result set using cursor.fetchone()?",
+        "How to split a string into integers in Python?",
+        "How to convert a string to an integer in Python?",
+        "Sort a list of tuples by the addition of second and third element of the tuple",
+        "Sorting a list of objects by a specific attribute",
+        "How to sort a list of tuples in python",
+        "How to sort a list of tuples in python",
+        "Selenium click on button using selenium webdriver",
+        "Clicking a link using selenium",
+        "Clicking a link using selenium",
+        "How to add a character to a string in Python?",
+        "How to sort a dataFrame in python pandas by two or more columns?",
+        "How to write a file with multiple lines?",
+        "Sorting a list of tuples by the length of the string",
+        "How to use regular expression to separate numbers and characters in strings like \"30d\"",
+        "How to match beginning of string or character in Python?",
+        "How to remove duplicate items from a list in python?",
+        "How to remove duplicate items from a list in python?",
+        "How to get a list of all keys in a dictionary?",
+        "How to reshape a 2D array to be 3D?",
+        "Converting a 2D array to a 3D array in numpy",
+        "How to get the text content of a div using BeautifulSoup?",
+        "Python: How to convert list of datetime objects to string?",
+        "Python: How to convert tuple to string?",
+        "How to use the outerHTML of a HTML element in Selenium Python?",
+        "How to get all digits after the last digit in a string?",
+        "Select rows from a DataFrame based on values in a column in pandas",
+        "Sort a Python dictionary by value",
+        "Sort a list of tuples by the second element",
+        "Sort a Python dictionary by value",
+        "Convert hex string to int",
+        "get the size of a list",
+        "How to convert a list of tuples to a list of int?",
+        "How to call a python script from another python script",
+        "How to call a python script from within a python script",
+        "Python: Finding intersection of two lists",
+        "How to base64 encode a Python dictionary?",
+        "How to base64 encode a string in Python?",
+        "read csv into record array in numpy",
+        "How to get attribute of an object with getattr?",
+        "How to convert a list of dictionaries into a dictionary of lists?",
+        "Summing 2nd list items in a list of tuples",
+        "Converting string to dictionary",
+        "How to remove all words in a string that contains a number?",
+        "Remove all whitespace in a string",
+        "Find index of elements in 2d array that are in 1d array",
+        "Mean of each row in a numpy array",
+        "How to execute a script from within a python script",
+        "How to execute a script from within a python script?",
+        "How to write a .txt file in the root of a Python project?",
+        "Pandas: Fill missing values with mean of sub-datasets",
+        "Python: How to get year as a string in YYYY-MM-DD format?",
+        "How to call a parent class constructor from a child class in python?",
+        "Find the index of the row with the highest value in a numpy array",
+        "How to split a string into words that do not contain spaces in python?",
+        "How to get the length of the longest string in a list?",
+        "How to get the value of a specific column of a pandas dataframe",
+        "read a file line by line into a list",
+        "How to filter a dictionary in Python?",
+        "How to create a file without extension in python?",
+        "Pandas: How to group by multiple columns in a group by?",
+        "How to check if a key starts with a specific word in Python?",
+        "How to filter a dictionary in Python?",
+        "Create a Pandas DataFrame from a list of tuples",
+        "How to print a list of tuples in python?",
+        "How to print unicode escape sequences in a string?",
+        "How to convert a unicode string to a string literal python?",
+        "How to resize an image in Python?",
+        "Python regex findall case insensitive",
+        "Printing numbers in a format that can be easily printed in Python",
+        "Sorting a list of objects by a specific attribute",
+        "Sorting a list of dictionaries in python",
+        "Sorting list of nested dictionaries in python",
+        "How to find the largest element in two lists in Python?",
+        "Python BeautifulSoup Extract specific tags",
+        "How to use a string as a database table name in Pandas?",
+        "Remove all whitespace in a string",
+        "How to convert a list of tuples to a list of lists?",
+        "remove (chomp) a newline",
+        "How to get all elements in a list of tuples?",
+        "How to get all elements in a list of tuples?",
+        "How to check if all elements in a list match a condition?",
+        "How to check if all elements in a list match a condition?",
+        "How to remove duplicate items from a list in python?",
+        "How to find the index of a value in a list of tuples?",
+        "How to find the index of an element in a list of tuples?",
+        "Python: Finding the largest item in a list of tuples",
+        "Python: Finding the largest item in a list of lists",
+        "make a time delay",
+        "Python: How to convert list of tuples to string?",
+        "How to set max length of a field in Django models?",
+        "Sorting a list of tuples by the second element of the tuple",
+        "Sorting a list of vertices by their degree in python",
+        "How to check if all elements in a list match a condition?",
+        "copy a list",
+        "How to read a file in other directory in python?",
+        "How to get attribute of an object with getattr?",
+        "Add tuple to a list of tuples",
+        "How to convert a list of tuples into a list of tuples?",
+        "How to remove all rows from a pandas dataframe that have a negative value?",
+        "How to zip lists in a list?",
+        "How to zip lists in a list?",
+        "How to combine two lists into a single list?",
+        "How to combine two lists into a single list?",
+        "How to zip lists in a list",
+        "Python: How to convert a list of tuples to a list of tuples?",
+        "How to encode a float to a JSON string?",
+        "Python: How to set global variable in Django template",
+        "Python: how to add new key to a new value in python dictionary?",
+        "Python: how to add new key to a dictionary?",
+        "Python: how to add new key to a dictionary?",
+        "Find the largest integer greater than any element in a list",
+        "round number to nearest integer",
+        "How to use regular expression to separate numbers and characters in strings like \"30D\"",
+        "Pandas: How to filter rows by number of values in a group?",
+        "How to split a file into lines that do not contain tabs?",
+        "read a file line by line into a list",
+        "How to change the color of the bar using matplotlib?",
+        "How to count the number of words in a sentence that contain a certain word?",
+        "How to match beginning of string or character in Python?",
+        "How to get all combinations of n binary value",
+        "How to convert datetime to UTC time in python?",
+        "How to remove all instances of an element from a list in Python?",
+        "How to remove all instances of an element from a list in Python?",
+        "Creating a JSON response with Python",
+        "Python regex findall case insensitive",
+        "Python regex findall case insensitive",
+        "Python regular expression matching all but a string",
+        "Python regular expression matching all but a string",
+        "Python regular expression matching all but a string",
+        "Python: How to format a list of numbers?",
+        "How to execute external commands with csh instead of bash",
+        "How to get a list of values from a dictionary in Python?",
+        "Create a dictionary with list comprehension",
+        "How to mean the values of a numpy array?",
+        "How to print unicode literals in Python?",
+        "Python regex split case insensitive",
+        "How to plot a bar chart with multiple axes with matplotlib?",
+        "How to convert a Python dictionary to a list of tuples?",
+        "How to remove all words in a list that contain special characters?",
+        "How to check if type of an object is string?",
+        "check whether an object is an instance of a class in python",
+        "How to get the type of a variable in Python?",
+        "check whether an object is an instance of a class in python",
+        "How to check if type of a variable is string?",
+        "Add to lists of lists",
+        "Add to lists of lists",
+        "How to extend a collection of objects in python?",
+        "append to a list",
+        "Add to arrays in Python",
+        "Secret key for Django app",
+        "Converting a Pandas DataFrame to a DataFrame of tuples",
+        "Python: Finding items in a list of dictionaries",
+        "Rotate axis text in matplotlib",
+        "Python regular expression matching all but a string",
+        "How to get only the last part of a path in Python?",
+        "How to get the first occurrence of a character in a string?",
+        "Python regex split case insensitive",
+        "How to split a string at the beginning of a word?",
+        "POST request with json in json file",
+        "How to write a file in python without overwriting an existing file",
+        "How to get a list of values from a list of dictionaries in python?",
+        "How to get all unique values from a list of dictionaries in python?",
+        "round number to nearest integer",
+        "Sorting list of dates in Python",
+        "How to set the right and bottom of the ragged canvas in matplotlib?",
+        "check whether a file exists",
+        "How to count the number of values in a dictionary key in Python?",
+        "How to count the number of lines in a file in Python?",
+        "How to use a list of columns in pandas dataframe to select rows from a group in pandas",
+        "How to concatenate two dataframes in pandas",
+        "Python regex for \"js/foo.js\"",
+        "Python: Sum values in a list of strings",
+        "How to execute external commands with csh instead of bash",
+        "How to insert a list at the front of another list?",
+        "How to change the color of the bars on a plot in pandas",
+        "How to use regular expression to separate numbers and characters in strings like \"30876543210\"",
+        "get the number of keys in a dictionary",
+        "get the size of a list",
+        "get the size of a list",
+        "How to count the number of elements in a tuple/list in Python?",
+        "How to count the number of the characters in a string?",
+        "How to convert a unicode string to a string literal python?",
+        "Python: How to replace all instances of a character with another?",
+        "Delete a file or folder",
+        "How to get week number in Python?",
+        "Sorting a list of dictionaries by dictionary values",
+        "Sorting a Python dictionary by value",
+        "Converting a 2D array to a 3D array in numpy",
+        "How to concatenate two numpy arrays into one list?",
+        "How to concatenate two numpy arrays into one list?",
+        "How to convert 2d array to 3d numpy array?",
+        "Converting a numpy array to a list of tuples",
+        "How to get a port from a hostname in Python?",
+        "Pandas: How to drop a column if it is null?",
+        "Unauthorized response from Django/python",
+        "Flask - How to use a different template folder for all templates?",
+        "How to use variables in SQL statement in Python?",
+        "How to sort a dataFrame in python pandas by two or more columns?",
+        "How to sort a 2D array in python?",
+        "How to sort a 2D array in python?",
+        "How to change the size of the matplotlib figure on a new page?",
+        "How to convert a date frame to ordinal values in Python?",
+        "How to use lxml to find an element by text?",
+        "How to get a range of rows from a pandas dataframe in python?",
+        "Can I execute external commands with csh instead of bash?",
+        "Python: updating a dictionary of values in a list of dictionaries",
+        "Empty a list",
+        "Add to integers in a list",
+        "How to add an element to a list in python?",
+        "How to remove unicode literals in a string in Python?",
+        "Select only specific columns from a DataFrame in pandas",
+        "Select only specific columns from a DataFrame in pandas",
+        "Create a numpy array of tuples from a list of tuples",
+        "How to get the type of a variable in Python?",
+        "How to get the type of a variable in Python?",
+        "How to get the type of a variable in Python?",
+        "How to get the type of a variable in Python?",
+        "How to get the type of a variable in Python?",
+        "How to get a function name as a string in Python?",
+        "How to get all elements between two indices in Python?",
+        "Python: How to print variable number of arguments in format string?",
+        "Python: How to remove all whitespace in a string?",
+        "Create an empty list",
+        "read a file line by line into a list",
+        "Remove all non-alphanumeric characters from a string",
+        "Remove specific characters from a string",
+        "How to remove all instances of an element from a string in Python?",
+        "Remove all non-alphanumeric characters from a string",
+        "Pandas dropna for index",
+        "How to remove all instances of an element from a list in Python?",
+        "Convert list to list of integers",
+        "How to convert a string to an array in Python?",
+        "How to write a string to the console in python",
+        "round number to nearest integer",
+        "list all files of a directory",
+        "list all files of a directory",
+        "list all files of a directory",
+        "How to change legend size with pandas.plot",
+        "Python: How to generate a 16-bit IP address?",
+        "iterate over a dictionary in python",
+        "Generate random IP addresses in a range in Python",
+        "How to count the number of 1's in each element in a list?",
+        "How to write a tuple to a file in Python?",
+        "How to filter a list of tuples in Python?",
+        "How to print escaped unicode strings in python?",
+        "Python: How to remove the extra whitespace from a string in Python?",
+        "Python: How to get the sum of squares in a matrix?",
+        "Python: Finding difference between two lists",
+        "numpy: how to read a file into a numpy array?",
+        "Sort a list of dictionaries by dictionary values",
+        "Sort a list of dictionaries by value",
+        "Select rows from a DataFrame based on values in a column in pandas",
+        "How to use regular expression to separate data in a string?",
+        "How to get date from string in Python?",
+        "How to count the number of biggest brown fox in a string?",
+        "How to parse JSON response from a REST request?",
+        "How to download a file via HTTP with Python?",
+        "How to split a string into words that do not contain spaces?",
+        "How to split a string at the end of a line?",
+        "How to split a string into words that do not contain spaces?",
+        "How to remove digits in a string in Python?",
+        "Sort a list of strings based on a regex",
+        "How to capture output of subprocess.Popen",
+        "How to filter a list of tuples in Python?",
+        "Remove all elements in a list that are not instances of an element in python",
+        "sorting a list of dictionaries in python",
+        "sorting a list of dictionaries in python",
+        "Sorting a list of dictionaries by value in python",
+        "Sorting a list of dictionaries by value in python",
+        "Pandas: How to sort by the second value of each group?",
+        "Python: How to convert a dictionary to a string?",
+        "Python: How to remove all duplicate characters from a string?",
+        "How to get JSON response from API using urllib.request",
+        "How to remove all whitespace in a string in Python?",
+        "Django - Filter queryset by Date Range",
+        "Sorting a list of tuples by two elements",
+        "Subtract time in seconds from current time",
+        "Python regex to remove all characters after last dot",
+        "reload python module",
+        "How to convert a float to a hex string in Python?",
+        "Convert list to list of floats",
+        "How to write a pandas dataframe with the same index as a pandas dataframe",
+        "How to decode JSON with Python?",
+        "How to get a string of random numbers in Python?",
+        "Writing a list to a file with Python",
+        "How to remove all non-alphanumeric characters from a string in python?",
+        "How to get a list of all keys in a Python dictionary?",
+        "print a file's line number",
+        "append to a file",
+        "append to a file",
+        "How to convert a unicode string to a byte string?",
+        "Django - How to sort queryset by date in a specific format?",
+        "How to use regular expression to separate numbers and characters in strings like \"30\" or \"30.0\"",
+        "How to use regular expression to separate numbers and characters in strings like \"30d\"",
+        "How to execute a program inside a python script",
+        "How to sort a list of tuples in python",
+        "Python: How to get all keys from a range in Python?",
+        "How do I convert datetime.date.today() to UTC time?",
+        "How to get the index of the first element in a list that is not an integer?",
+        "Python: How to remove all instances of an element from a list of tuples?",
+        "How to get a random file name in a directory?",
+        "Python: Finding the largest value in a list of numbers",
+        "Python regex findall case insensitive",
+        "How to use regular expression to separate URLs in HTML?",
+        "How to remove all whitespace in a string?",
+        "How to open a file in python without asking for confirmation",
+        "Summing 2nd list items in a list of lists of lists",
+        "Convert a 2D array to a 3D array in numpy"
+    ],
+    "references": [
+        [
+            "How can I send a signal from a python program?"
+        ],
+        [
+            "Decode Hex String in Python 3"
+        ],
+        [
+            "check if all elements in a list are identical"
+        ],
+        [
+            "Format string dynamically"
+        ],
+        [
+            "How to convert a string from CP-1251 to UTF-8?"
+        ],
+        [
+            "How I can get rid of None values in dictionary?"
+        ],
+        [
+            "How I can get rid of None values in dictionary?"
+        ],
+        [
+            "Python: how to get the final output of multiple system commands?"
+        ],
+        [
+            "splitting and concatenating a string"
+        ],
+        [
+            "Finding the intersection between two series in Pandas"
+        ],
+        [
+            "Sending http headers with python"
+        ],
+        [
+            "Python -Remove Time from Datetime String"
+        ],
+        [
+            "How do I split a multi-line string into multiple lines?"
+        ],
+        [
+            "How do I split a multi-line string into multiple lines?"
+        ],
+        [
+            "How to join mixed list (array) (with integers in it) in Python?"
+        ],
+        [
+            "Fastest way to get the first object from a queryset in django?"
+        ],
+        [
+            "How to calculate the sum of all columns of a 2D numpy array (efficiently)"
+        ],
+        [
+            "Python, how to enable all warnings?"
+        ],
+        [
+            "Python printing without commas"
+        ],
+        [
+            "OSError: [WinError 193] %1 is not a valid Win32 application"
+        ],
+        [
+            "How can I parse a time string containing milliseconds in it with python?"
+        ],
+        [
+            "How can I convert a string with dot and comma into a float number in Python"
+        ],
+        [
+            "How can I convert a string with dot and comma into a float number in Python"
+        ],
+        [
+            "In Python script, how do I set PYTHONPATH?"
+        ],
+        [
+            "Determining the unmatched portion of a string using a regex in Python"
+        ],
+        [
+            "How to read data from Excel and write it to text file line by line?"
+        ],
+        [
+            "download a file over HTTP"
+        ],
+        [
+            "download a file over HTTP"
+        ],
+        [
+            "download a file over HTTP"
+        ],
+        [
+            "download a file over HTTP"
+        ],
+        [
+            "download a file over HTTP"
+        ],
+        [
+            "Python's argparse to show program's version with prog and version string formatting"
+        ],
+        [
+            "Remove key from dictionary in Python returning new dictionary"
+        ],
+        [
+            "Merging two pandas dataframes"
+        ],
+        [
+            "Python regular expression split() string"
+        ],
+        [
+            "How to read keyboard-input?"
+        ],
+        [
+            "Auto reloading python Flask app upon code changes"
+        ],
+        [
+            "Python save list and read data from file"
+        ],
+        [
+            "Numpy: Multiplying a matrix with a 3d tensor -- Suggestion"
+        ],
+        [
+            "How to create nested lists in python?"
+        ],
+        [
+            "Python: Cut off the last word of a sentence?"
+        ],
+        [
+            "Numpy convert scalars to arrays"
+        ],
+        [
+            "Finding the sum of a nested list of ints"
+        ],
+        [
+            "Convert hex to float"
+        ],
+        [
+            "Python: Perform an operation on each dictionary value"
+        ],
+        [
+            "Running bash script from within python"
+        ],
+        [
+            "How would you make a comma-separated string from a list?"
+        ],
+        [
+            "How would you make a comma-separated string from a list?"
+        ],
+        [
+            "Print a list in reverse order with range()?"
+        ],
+        [
+            "How can i subtract two strings in python?"
+        ],
+        [
+            "python reverse tokens in a string"
+        ],
+        [
+            "converting epoch time with milliseconds to datetime"
+        ],
+        [
+            "converting epoch time with milliseconds to datetime"
+        ],
+        [
+            "Getting the date of 7 days ago from current date in python"
+        ],
+        [
+            "How can I sum a column of a list?"
+        ],
+        [
+            "How can I sum a column of a list?"
+        ],
+        [
+            "How to encode text to base64 in python"
+        ],
+        [
+            "How can I combine dictionaries with the same keys in python?"
+        ],
+        [
+            "How can I combine dictionaries with the same keys in python?"
+        ],
+        [
+            "How do I get the url parameter in a Flask view"
+        ],
+        [
+            "Identify duplicate values in a list in Python"
+        ],
+        [
+            "How do you modify sys.path in Google App Engine (Python)?"
+        ],
+        [
+            "How do you modify sys.path in Google App Engine (Python)?"
+        ],
+        [
+            "Insert Null into SQLite3 in Python"
+        ],
+        [
+            "Flattening a shallow list in Python"
+        ],
+        [
+            "Append elements of a set to a list in Python"
+        ],
+        [
+            "Append elements of a set to a list in Python"
+        ],
+        [
+            "Python, Pandas : write content of DataFrame into text File"
+        ],
+        [
+            "Python, Pandas : write content of DataFrame into text File"
+        ],
+        [
+            "how to get the last part of a string before a certain character?"
+        ],
+        [
+            "how to get the last part of a string before a certain character?"
+        ],
+        [
+            "FTP upload files Python"
+        ],
+        [
+            "Write value to hidden element with selenium python script"
+        ],
+        [
+            "Combining two numpy arrays to form an array with the largest value from each array"
+        ],
+        [
+            "How to print an entire list while not starting by the first item"
+        ],
+        [
+            "loop over files"
+        ],
+        [
+            "loop over files"
+        ],
+        [
+            "Create random list of integers in Python"
+        ],
+        [
+            "Using %f with strftime() in Python to get microseconds"
+        ],
+        [
+            "Build a GQL query (for Google App Engine) that has a condition on ReferenceProperty"
+        ],
+        [
+            "How to filter rows in pandas by regex"
+        ],
+        [
+            "What is the best way to print a table with delimiters in Python"
+        ],
+        [
+            "Pandas: Delete rows based on multiple columns values"
+        ],
+        [
+            "String Formatting in Python 3"
+        ],
+        [
+            "String Formatting in Python 3"
+        ],
+        [
+            "String Formatting in Python 3"
+        ],
+        [
+            "Convert list of lists to list of integers"
+        ],
+        [
+            "Convert list of lists to list of integers"
+        ],
+        [
+            "Convert list of lists to list of integers"
+        ],
+        [
+            "How to write a list to a file with newlines in Python3"
+        ],
+        [
+            "Removing an element from a list based on a predicate"
+        ],
+        [
+            "python regular expression to remove repeated words"
+        ],
+        [
+            "Counting non zero values in each column of a dataframe in python"
+        ],
+        [
+            "Python match string if it does not start with X"
+        ],
+        [
+            "String to list in Python"
+        ],
+        [
+            "Parsing XML in Python with regex"
+        ],
+        [
+            "How to empty a file using Python"
+        ],
+        [
+            "how to convert a string date into datetime format in python?"
+        ],
+        [
+            "What's the fastest way to locate a list element within a list in python?"
+        ],
+        [
+            "Python: trying to lower a string and remove non-alphanumeric characters aside from space"
+        ],
+        [
+            "Python: trying to lower a string and remove non-alphanumeric characters aside from space"
+        ],
+        [
+            "Subscripting text in matplotlib labels"
+        ],
+        [
+            "Subscripting text in matplotlib labels"
+        ],
+        [
+            "Looping over a list in Python"
+        ],
+        [
+            "Initialize a list of objects in Python"
+        ],
+        [
+            "Initialize a list of objects in Python"
+        ],
+        [
+            "selenium how to get the content of href within some targeted class"
+        ],
+        [
+            "Joining Table/DataFrames with common Column in Python"
+        ],
+        [
+            "insert variable values into a string in python"
+        ],
+        [
+            "Split a string by a delimiter in python"
+        ],
+        [
+            "check if a directory exists and create it if necessary"
+        ],
+        [
+            "check if a directory exists and create it if necessary"
+        ],
+        [
+            "check if a directory exists and create it if necessary"
+        ],
+        [
+            "check if a directory exists and create it if necessary"
+        ],
+        [
+            "Replace a substring when it is a separate word"
+        ],
+        [
+            "Python: removing characters except digits from string"
+        ],
+        [
+            "Python: removing characters except digits from string"
+        ],
+        [
+            "How to access a tag called \"name\" in BeautifulSoup"
+        ],
+        [
+            "Iterate through PyMongo Cursor as key-value pair"
+        ],
+        [
+            "Python how to combine two matrices in numpy"
+        ],
+        [
+            "Python how to combine two matrices in numpy"
+        ],
+        [
+            "how to check the character count of a file in python"
+        ],
+        [
+            "count the occurrences of a list item"
+        ],
+        [
+            "count the occurrences of a list item"
+        ],
+        [
+            "count the occurrences of a list item"
+        ],
+        [
+            "count the occurrences of a list item"
+        ],
+        [
+            "count the occurrences of a list item"
+        ],
+        [
+            "How to copy a file using python?"
+        ],
+        [
+            "Efficient way to find the largest key in a dictionary with non-zero value"
+        ],
+        [
+            "Efficient way to find the largest key in a dictionary with non-zero value"
+        ],
+        [
+            "Efficient way to find the largest key in a dictionary with non-zero value"
+        ],
+        [
+            "Re-read an open file Python"
+        ],
+        [
+            "Coalesce values from 2 columns into a single column in a pandas dataframe"
+        ],
+        [
+            "python: Is this a wrong way to remove an element from a dict?"
+        ],
+        [
+            "How can I subtract or add 100 years to a datetime field in the database in Django?"
+        ],
+        [
+            "How to merge multiple lists into one list in python?"
+        ],
+        [
+            "How to increment a value with leading zeroes?"
+        ],
+        [
+            "How can I check if a Pandas dataframe's index is sorted"
+        ],
+        [
+            "Convert tuple to list"
+        ],
+        [
+            "Convert tuple to list"
+        ],
+        [
+            "Convert tuple to list and back"
+        ],
+        [
+            "how to send the output of pprint module to a log file"
+        ],
+        [
+            "Python Pandas: Get index of rows which column matches certain value"
+        ],
+        [
+            "Python Pandas: Get index of rows which column matches certain value"
+        ],
+        [
+            "Python Pandas: Get index of rows which column matches certain value"
+        ],
+        [
+            "Python Pandas: Get index of rows which column matches certain value"
+        ],
+        [
+            "How do I change directory back to my original working directory with Python?"
+        ],
+        [
+            "How to insert strings with quotes and newlines into sqlite db with Python?"
+        ],
+        [
+            "Python - how to convert a \"raw\" string into a normal string"
+        ],
+        [
+            "Python - how to convert a \"raw\" string into a normal string"
+        ],
+        [
+            "Python - how to convert a \"raw\" string into a normal string"
+        ],
+        [
+            "Splitting a string with repeated characters into a list using regex"
+        ],
+        [
+            "How to do a scatter plot with empty circles in Python?"
+        ],
+        [
+            "How to do a scatter plot with empty circles in Python?"
+        ],
+        [
+            "Deleting a div with a particlular class using BeautifulSoup"
+        ],
+        [
+            "How to filter rows containing a string pattern from a Pandas dataframe"
+        ],
+        [
+            "How to convert pandas index in a dataframe to a column?"
+        ],
+        [
+            "How to convert pandas index in a dataframe to a column?"
+        ],
+        [
+            "How to convert pandas index in a dataframe to a column?"
+        ],
+        [
+            "Generic reverse of list items in Python"
+        ],
+        [
+            "in Numpy, how to zip two 2-D arrays?"
+        ],
+        [
+            "in Numpy, how to zip two 2-D arrays?"
+        ],
+        [
+            "How to convert a list of longs into a comma separated string in python"
+        ],
+        [
+            "Posting raw data with Python"
+        ],
+        [
+            "Find last occurrence of character"
+        ],
+        [
+            "Ending with a for loop in python"
+        ],
+        [
+            "transpose dictionary (extract all the values for one key from a list of dictionaries)"
+        ],
+        [
+            "How to get the filename without the extension from a path in Python?"
+        ],
+        [
+            "Make dictionary from list with python"
+        ],
+        [
+            "Merging a list of lists"
+        ],
+        [
+            "How to select rows in a DataFrame between two values, in Python Pandas?"
+        ],
+        [
+            "Replace all occurrences of a string in a pandas dataframe (Python)"
+        ],
+        [
+            "Replace all occurrences of a string in a pandas dataframe (Python)"
+        ],
+        [
+            "Mapping a string into a list of pairs"
+        ],
+        [
+            "Mapping a string into a list of pairs"
+        ],
+        [
+            "How do you extract a url from a string using python?"
+        ],
+        [
+            "How do you extract a url from a string using python?"
+        ],
+        [
+            "Remove all special characters, punctuation and spaces from string"
+        ],
+        [
+            "How to get a daterange of the 2nd Fridays of each month?"
+        ],
+        [
+            "Multidimensional array in Python"
+        ],
+        [
+            "How do I replace whitespaces with underscore and vice versa?"
+        ],
+        [
+            "How to get an absolute file path in Python"
+        ],
+        [
+            "Is there a string-collapse library function in python?"
+        ],
+        [
+            "Get Filename Without Extension in Python"
+        ],
+        [
+            "How to sum elements in functional way"
+        ],
+        [
+            "Python Regex Split Keeps Split Pattern Characters"
+        ],
+        [
+            "Shuffle columns of an array with Numpy"
+        ],
+        [
+            "Copy all values in a column to a new column in a pandas dataframe"
+        ],
+        [
+            "Find a value within nested json dictionary in python"
+        ],
+        [
+            "True for all characters of a string"
+        ],
+        [
+            "How to determine number of files on a drive with Python?"
+        ],
+        [
+            "how to get a single result from a SQLite query in python?"
+        ],
+        [
+            "How to convert a string list into an integer in python"
+        ],
+        [
+            "How to convert a string list into an integer in python"
+        ],
+        [
+            "Sorting a Python list by two criteria"
+        ],
+        [
+            "How to sort a list of objects , based on an attribute of the objects?"
+        ],
+        [
+            "How to sort a list of objects , based on an attribute of the objects?"
+        ],
+        [
+            "How to sort a list of objects , based on an attribute of the objects?"
+        ],
+        [
+            "Click a href button with selenium and python?"
+        ],
+        [
+            "Click a href button with selenium and python?"
+        ],
+        [
+            "Click a href button with selenium and python?"
+        ],
+        [
+            "Casting an int to a string in Python"
+        ],
+        [
+            "Sorting data in DataFrame Pandas"
+        ],
+        [
+            "Prepend a line to an existing file in Python"
+        ],
+        [
+            "Python sort a List by length of value in tuple"
+        ],
+        [
+            "Split by suffix with Python regular expression"
+        ],
+        [
+            "python's re: return True if regex contains in the string"
+        ],
+        [
+            "Removing duplicates in lists"
+        ],
+        [
+            "Removing duplicates in lists"
+        ],
+        [
+            "Removing duplicates in lists"
+        ],
+        [
+            "How to make List from Numpy Matrix in Python"
+        ],
+        [
+            "How to make List from Numpy Matrix in Python"
+        ],
+        [
+            "Beautifulsoup - nextSibling"
+        ],
+        [
+            "Converting lists of tuples to strings Python"
+        ],
+        [
+            "Converting lists of tuples to strings Python"
+        ],
+        [
+            "Splinter or Selenium: Can we get current html page after clicking a button?"
+        ],
+        [
+            "Find a specific pattern (regular expression) in a list of strings (Python)"
+        ],
+        [
+            "Selecting with complex criteria from pandas.DataFrame"
+        ],
+        [
+            "How to sort dictionaries by keys in Python"
+        ],
+        [
+            "How to sort dictionaries by keys in Python"
+        ],
+        [
+            "How to sort dictionaries by keys in Python"
+        ],
+        [
+            "convert strings into integers"
+        ],
+        [
+            "convert strings into integers"
+        ],
+        [
+            "convert strings into integers"
+        ],
+        [
+            "How to call a shell script from python code?"
+        ],
+        [
+            "How to call a shell script from python code?"
+        ],
+        [
+            "Interleaving two lists in Python"
+        ],
+        [
+            "Base64 encoding in Python 3"
+        ],
+        [
+            "Base64 encoding in Python 3"
+        ],
+        [
+            "Parsing CSV / tab-delimited txt file with Python"
+        ],
+        [
+            "Python - Access object attributes as in a dictionary"
+        ],
+        [
+            "list of dicts to/from dict of lists"
+        ],
+        [
+            "How do I sum the first value in each tuple in a list of tuples in Python?"
+        ],
+        [
+            "Convert unicode string dictionary into dictionary in python"
+        ],
+        [
+            "Find all words in a string that start with the $ sign in Python"
+        ],
+        [
+            "How to remove any URL within a string in Python"
+        ],
+        [
+            "How to find all elements in a numpy 2-dimensional array that match a certain list?"
+        ],
+        [
+            "Calculate mean across dimension in a 2D array"
+        ],
+        [
+            "Running R script from python"
+        ],
+        [
+            "Running R script from python"
+        ],
+        [
+            "How to add a header to a csv file in Python?"
+        ],
+        [
+            "Pandas Dataframe: Replacing NaN with row average"
+        ],
+        [
+            "Python: Converting Epoch time into the datetime"
+        ],
+        [
+            "Calling a base class's classmethod in Python"
+        ],
+        [
+            "selecting rows in numpy ndarray based on the value of two columns"
+        ],
+        [
+            "Python regex separate space-delimited words into a list"
+        ],
+        [
+            "Length of longest word in a list"
+        ],
+        [
+            "accessing python dictionary"
+        ],
+        [
+            "Save line in file to list"
+        ],
+        [
+            "Python: Best Way to Exchange Keys with Values in a Dictionary?"
+        ],
+        [
+            "creating a tmp file in python"
+        ],
+        [
+            "How to count distinct values in a column of a pandas group by object?"
+        ],
+        [
+            "Check for a key pattern in a dictionary in python"
+        ],
+        [
+            "Check for a key pattern in a dictionary in python"
+        ],
+        [
+            "python, best way to convert a pandas series into a pandas dataframe"
+        ],
+        [
+            "printing tab-separated values of a list"
+        ],
+        [
+            "Python unicode string with UTF-8?"
+        ],
+        [
+            "Python unicode string with UTF-8?"
+        ],
+        [
+            "How to adjust the quality of a resized image in Python Imaging Library?"
+        ],
+        [
+            "Regex, find pattern only in middle of string"
+        ],
+        [
+            "how to show Percentage in python"
+        ],
+        [
+            "Sort a list of dicts by dict values"
+        ],
+        [
+            "Sort a list of dicts by dict values"
+        ],
+        [
+            "Sort a list of dicts by dict values"
+        ],
+        [
+            "finding n largest differences between two lists"
+        ],
+        [
+            "Finding multiple attributes within the span tag in Python"
+        ],
+        [
+            "Pandas writing dataframe to other postgresql schema"
+        ],
+        [
+            "Regular Expression to find brackets in a string"
+        ],
+        [
+            "Removing duplicates from list of lists in Python"
+        ],
+        [
+            "Reading a file without newlines"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "get item's position in a list"
+        ],
+        [
+            "Find the maximum value in a list of tuples in Python"
+        ],
+        [
+            "Find the maximum value in a list of tuples in Python"
+        ],
+        [
+            "How do I simulate a progress counter in a command line application in Python?"
+        ],
+        [
+            "Tuple conversion to a string"
+        ],
+        [
+            "Default value for field in Django model"
+        ],
+        [
+            "How do I perform secondary sorting in python?"
+        ],
+        [
+            "How do I perform secondary sorting in python?"
+        ],
+        [
+            "Python: convert list to generator"
+        ],
+        [
+            "Remove multiple items from list in Python"
+        ],
+        [
+            "Deleting a specific line in a file (python)"
+        ],
+        [
+            "Attribute getters in python"
+        ],
+        [
+            "How do I convert tuple of tuples to list in one line (pythonic)?"
+        ],
+        [
+            "How do I convert tuple of tuples to list in one line (pythonic)?"
+        ],
+        [
+            "Python Pandas: How to replace a characters in a column of a dataframe?"
+        ],
+        [
+            "inverse of zip"
+        ],
+        [
+            "inverse of zip"
+        ],
+        [
+            "inverse of zip"
+        ],
+        [
+            "inverse of zip"
+        ],
+        [
+            "inverse of zip"
+        ],
+        [
+            "inverse of zip"
+        ],
+        [
+            "Python JSON serialize a Decimal object"
+        ],
+        [
+            "Add key to a dictionary"
+        ],
+        [
+            "Add key to a dictionary"
+        ],
+        [
+            "Add key to a dictionary"
+        ],
+        [
+            "Add key to a dictionary"
+        ],
+        [
+            "Is there a one line code to find maximal value in a matrix?"
+        ],
+        [
+            "Python - how to round down to 2 decimals"
+        ],
+        [
+            "Extract IP address from an html string (python)"
+        ],
+        [
+            "How do I filter a pandas DataFrame based on value counts?"
+        ],
+        [
+            "Converting a string into a list in Python"
+        ],
+        [
+            "Converting a string into a list in Python"
+        ],
+        [
+            "Adding Colorbar to a Spectrogram"
+        ],
+        [
+            "Count most frequent 100 words from sentences in Dataframe Pandas"
+        ],
+        [
+            "Python split a string using regex"
+        ],
+        [
+            "Generate all subsets of size k (containing k elements) in Python"
+        ],
+        [
+            "Python: How to get a value of datetime.today() that is \"timezone aware\"?"
+        ],
+        [
+            "Python: How to remove empty lists from a list?"
+        ],
+        [
+            "Python: How to remove empty lists from a list?"
+        ],
+        [
+            "Django view returning json without using template"
+        ],
+        [
+            "regex to get all text outside of brackets"
+        ],
+        [
+            "regex to get all text outside of brackets"
+        ],
+        [
+            "Matching multiple regex patterns with the alternation operator?"
+        ],
+        [
+            "Matching multiple regex patterns with the alternation operator?"
+        ],
+        [
+            "Matching multiple regex patterns with the alternation operator?"
+        ],
+        [
+            "Perform a string operation for every element in a Python list"
+        ],
+        [
+            "start python script as background process from within a python script"
+        ],
+        [
+            "Python dictionary: Get list of values for list of keys"
+        ],
+        [
+            "Create dictionary from lists of keys and multiple values"
+        ],
+        [
+            "Numpy - Averaging multiple columns of a 2D array"
+        ],
+        [
+            "Replace all quotes in a string with escaped quotes?"
+        ],
+        [
+            "Partitioning a string in Python by a regular expression"
+        ],
+        [
+            "plotting stacked barplots on a panda data frame"
+        ],
+        [
+            "How to reverse a dictionary in Python?"
+        ],
+        [
+            "finding index of multiple items in a list"
+        ],
+        [
+            "find out if a Python object is a string"
+        ],
+        [
+            "find out if a Python object is a string"
+        ],
+        [
+            "find out if a Python object is a string"
+        ],
+        [
+            "find out if a Python object is a string"
+        ],
+        [
+            "find out if a Python object is a string"
+        ],
+        [
+            "take the content of a list and append it to another list"
+        ],
+        [
+            "take the content of a list and append it to another list"
+        ],
+        [
+            "take the content of a list and append it to another list"
+        ],
+        [
+            "take the content of a list and append it to another list"
+        ],
+        [
+            "Appending tuples to lists"
+        ],
+        [
+            "Where do I get a SECRET_KEY for Flask?"
+        ],
+        [
+            "How to unpack a Series of tuples in Pandas?"
+        ],
+        [
+            "How to find the position of an element in a list , in Python?"
+        ],
+        [
+            "Is it possible to wrap the text of xticks in matplotlib in python?"
+        ],
+        [
+            "How to remove symbols from a string with Python?"
+        ],
+        [
+            "get current directory - Python"
+        ],
+        [
+            "Regex and Octal Characters"
+        ],
+        [
+            "Python split string based on regex"
+        ],
+        [
+            "Python split string based on regex"
+        ],
+        [
+            "Using Python Requests to send file and JSON in single request"
+        ],
+        [
+            "How to write bytes to a file in Python 3 without knowing the encoding?"
+        ],
+        [
+            "Mapping dictionary value to list"
+        ],
+        [
+            "How to find duplicate names using pandas?"
+        ],
+        [
+            "Truncating floats in Python"
+        ],
+        [
+            "Order list by date (String and datetime)"
+        ],
+        [
+            "Move radial tick labels on a polar plot in matplotlib"
+        ],
+        [
+            "How to check if a path is absolute path or relative path in cross platform way with Python?"
+        ],
+        [
+            "Counting the Number of keywords in a dictionary in python"
+        ],
+        [
+            "Counting the Number of keywords in a dictionary in python"
+        ],
+        [
+            "Pandas dataframe get first row of each group"
+        ],
+        [
+            "Splitting a list in a Pandas cell into multiple columns"
+        ],
+        [
+            "Extracting specific src attributes from script tags"
+        ],
+        [
+            "Most efficient way to convert items of a list to int and sum them up"
+        ],
+        [
+            "How to use subprocess when multiple arguments contain spaces?"
+        ],
+        [
+            "how to reverse a priority queue in Python without using classes?"
+        ],
+        [
+            "pandas plot dataframe barplot with colors by category"
+        ],
+        [
+            "Python regex for MD5 hash"
+        ],
+        [
+            "Getting the length of an array"
+        ],
+        [
+            "Getting the length of an array"
+        ],
+        [
+            "Getting the length of an array"
+        ],
+        [
+            "Getting the length of an array"
+        ],
+        [
+            "Getting the length of an array"
+        ],
+        [
+            "remove escape character from string"
+        ],
+        [
+            "Python string replace two things at once?"
+        ],
+        [
+            "How do I remove/delete a folder that is not empty with Python?"
+        ],
+        [
+            "in pandas how can I groupby weekday() for a datetime column?"
+        ],
+        [
+            "How to sort Counter by value? - python"
+        ],
+        [
+            "How to sort Counter by value? - python"
+        ],
+        [
+            "Append a NumPy array to a NumPy array"
+        ],
+        [
+            "numpy concatenate two arrays vertically"
+        ],
+        [
+            "numpy concatenate two arrays vertically"
+        ],
+        [
+            "numpy concatenate two arrays vertically"
+        ],
+        [
+            "numpy concatenate two arrays vertically"
+        ],
+        [
+            "How can I do DNS lookups in Python, including referring to /etc/hosts?"
+        ],
+        [
+            "How to update a subset of a MultiIndexed pandas DataFrame"
+        ],
+        [
+            "How do I return a 401 Unauthorized in Django?"
+        ],
+        [
+            "How to dynamically select template directory to be used in flask?"
+        ],
+        [
+            "How do I INSERT INTO t1 (SELECT * FROM t2) in SQLAlchemy?"
+        ],
+        [
+            "Sorting a list of lists in Python"
+        ],
+        [
+            "Sorting a list of lists in Python"
+        ],
+        [
+            "Sorting a list of lists in Python"
+        ],
+        [
+            "Non-ASCII characters in Matplotlib"
+        ],
+        [
+            "Pandas datetime column to ordinal"
+        ],
+        [
+            "Get HTML Source of WebElement in Selenium WebDriver using Python"
+        ],
+        [
+            "Most efficient way to get the integer index of a key in pandas"
+        ],
+        [
+            "open a terminal from python"
+        ],
+        [
+            "Python - How to declare and add items to an array?"
+        ],
+        [
+            "Python - How to declare and add items to an array?"
+        ],
+        [
+            "Python - How to declare and add items to an array?"
+        ],
+        [
+            "Add entry to list and remove first one in Python"
+        ],
+        [
+            "Converting a hex-string representation to actual bytes in Python"
+        ],
+        [
+            "How to select the last column of dataframe"
+        ],
+        [
+            "How to get a value from a Pandas DataFrame and not the index and object type"
+        ],
+        [
+            "Converting two lists into a matrix"
+        ],
+        [
+            "determine the variable type"
+        ],
+        [
+            "determine the variable type"
+        ],
+        [
+            "determine the variable type"
+        ],
+        [
+            "determine the variable type"
+        ],
+        [
+            "determine the variable type"
+        ],
+        [
+            "determine the variable type"
+        ],
+        [
+            "Get the nth item of a generator in Python"
+        ],
+        [
+            "printing double quotes around a variable"
+        ],
+        [
+            "Python concat string with list"
+        ],
+        [
+            "Extending a list of lists in Python?"
+        ],
+        [
+            "How do you read a file into a list in Python?"
+        ],
+        [
+            "How to delete all instances of a character in a string in python?"
+        ],
+        [
+            "How to delete all instances of a character in a string in python?"
+        ],
+        [
+            "How to delete all instances of a character in a string in python?"
+        ],
+        [
+            "How to delete all instances of a character in a string in python?"
+        ],
+        [
+            "How to drop rows of Pandas DataFrame whose value in certain columns is NaN"
+        ],
+        [
+            "Searching a list of objects in Python"
+        ],
+        [
+            "converting list of string to list of integer"
+        ],
+        [
+            "converting list of string to list of integer"
+        ],
+        [
+            "print in Python without newline or space"
+        ],
+        [
+            "Python float to int conversion"
+        ],
+        [
+            "Find all files in directory with extension .txt"
+        ],
+        [
+            "Find all files in directory with extension .txt"
+        ],
+        [
+            "Find all files in directory with extension .txt"
+        ],
+        [
+            "Pandas (python) plot() without a legend"
+        ],
+        [
+            "loop through an IP address range"
+        ],
+        [
+            "loop through an IP address range"
+        ],
+        [
+            "loop through an IP address range"
+        ],
+        [
+            "Python/Numpy: Convert list of bools to unsigned int"
+        ],
+        [
+            "Python: How to write multiple strings in one line?"
+        ],
+        [
+            "How to flatten a hetrogenous list of list into a single list in python?"
+        ],
+        [
+            "In Python, is it possible to escape newline characters when printing a string?"
+        ],
+        [
+            "String Slicing Python"
+        ],
+        [
+            "Middle point of each pair of an numpy.array"
+        ],
+        [
+            "Middle point of each pair of an numpy.array"
+        ],
+        [
+            "Reading unicode elements into numpy array"
+        ],
+        [
+            "How to sort this list in Python?"
+        ],
+        [
+            "How to sort this list in Python?"
+        ],
+        [
+            "pandas DataFrame filter regex"
+        ],
+        [
+            "How do I find the string between two special characters?"
+        ],
+        [
+            "How to create a list of date string in 'yyyymmdd' format with Python Pandas?"
+        ],
+        [
+            "How to count the number of times something occurs inside a certain string?"
+        ],
+        [
+            "Sending post data from angularjs to django as JSON and not as raw content"
+        ],
+        [
+            "Download file from web in Python 3"
+        ],
+        [
+            "Split string into a list"
+        ],
+        [
+            "Split string into a list"
+        ],
+        [
+            "Split string into a list"
+        ],
+        [
+            "Replacing characters in a regex"
+        ],
+        [
+            "Sort A list of Strings Based on certain field"
+        ],
+        [
+            "how to call multiple bash functions using | in python"
+        ],
+        [
+            "How to eliminate all strings from a list"
+        ],
+        [
+            "How to eliminate all strings from a list"
+        ],
+        [
+            "How do I sort a list of dictionaries by values of the dictionary in Python?"
+        ],
+        [
+            "How do I sort a list of dictionaries by values of the dictionary in Python?"
+        ],
+        [
+            "How do I sort a list of dictionaries by values of the dictionary in Python?"
+        ],
+        [
+            "How do I sort a list of dictionaries by values of the dictionary in Python?"
+        ],
+        [
+            "How to sort a Dataframe by the ocurrences in a column in Python (pandas)"
+        ],
+        [
+            "How can I access elements inside a list within a dictionary python?"
+        ],
+        [
+            "Variants of string concatenation?"
+        ],
+        [
+            "How do I get JSON data from RESTful service using Python?"
+        ],
+        [
+            "Removing an item from list matching a substring - Python"
+        ],
+        [
+            "Django filter by hour"
+        ],
+        [
+            "sort a list of dicts by x then by y"
+        ],
+        [
+            "How to convert a Python datetime object to seconds"
+        ],
+        [
+            "How to replace only part of the match with python re.sub"
+        ],
+        [
+            "How can I reload objects in my namespace in ipython"
+        ],
+        [
+            "How to get a 16bit Unsigned integer in python"
+        ],
+        [
+            "How can I use sum() function for a list in Python?"
+        ],
+        [
+            "Removing index column in pandas"
+        ],
+        [
+            "How to convert a string data to a JSON object in python?"
+        ],
+        [
+            "Is there a Python Library that contains a list of all the ascii characters?"
+        ],
+        [
+            "Python how to write to a binary file?"
+        ],
+        [
+            "Python Regex - checking for a capital letter with a lowercase after"
+        ],
+        [
+            "Last Key in Python Dictionary"
+        ],
+        [
+            "write line to file"
+        ],
+        [
+            "write line to file"
+        ],
+        [
+            "write line to file"
+        ],
+        [
+            "Python - Unicode to ASCII conversion"
+        ],
+        [
+            "How to get max value in django ORM"
+        ],
+        [
+            "Python regex findall numbers and dots"
+        ],
+        [
+            "Python regex findall numbers and dots"
+        ],
+        [
+            "Is there a way to run powershell code in python"
+        ],
+        [
+            "Sorting a dictionary of tuples in Python"
+        ],
+        [
+            "How do I get all the keys that are stored in the Cassandra column family with pycassa?"
+        ],
+        [
+            "how to create a file name with the current date & time in python?"
+        ],
+        [
+            "How to get the index of an integer from a list if the list contains a boolean?"
+        ],
+        [
+            "Subtract a value from every number in a list in Python?"
+        ],
+        [
+            "Best way to choose a random file from a directory"
+        ],
+        [
+            "How to get the highest element in absolute value in a numpy matrix?"
+        ],
+        [
+            "Using Regular Expressions to extract specific urls in python"
+        ],
+        [
+            "Using Regular Expressions to extract specific urls in python"
+        ],
+        [
+            "Is there a function in Python to split a string without ignoring the spaces?"
+        ],
+        [
+            "Open file in Python"
+        ],
+        [
+            "Sum of multiple list of lists index wise"
+        ],
+        [
+            "numpy: syntax/idiom to cast (n,) array to a (n, 1) array?"
+        ]
+    ]
+}

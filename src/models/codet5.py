@@ -1,19 +1,174 @@
 # source code to train CodeT5 model for fine-tuning.
 import os
 import json
+import torch
+import random
 import argparse
 import evaluate
+import warnings
 import numpy as np
 from typing import *
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from datasets import load_dataset, load_metric
 from src.evaluator.CodeBLEU.calc_code_bleu import codebleu_fromstr
+from transformers.trainer import PREFIX_CHECKPOINT_DIR, ShardedDDPOption, is_torch_tpu_available, OPTIMIZER_NAME, SCHEDULER_NAME, reissue_pt_warnings, is_sagemaker_mp_enabled, SCALER_NAME, TRAINER_STATE_NAME
 from transformers import AutoTokenizer, AutoModel, T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments, DataCollatorForSeq2Seq, pipeline
 
 TREE_SITTER_LANG_CODE_CORRECTIONS = {
     "cs": "c_sharp"
 }
+
+class CodeSearchNetTrainer(Trainer):
+    def _maybe_log_save_evaluate(self, tr_loss, model, trial, epoch, ignore_keys_for_eval):
+        if self.control.should_log:
+            if is_torch_tpu_available():
+                import torch_xla.core.xla_model as xm
+                xm.mark_step()
+
+            logs: Dict[str, float] = {}
+
+            # all_gather + mean() to get average loss over all processes
+            tr_loss_scalar = self._nested_gather(tr_loss).mean().item()
+
+            # reset tr_loss to zero
+            tr_loss -= tr_loss
+
+            logs["loss"] = round(tr_loss_scalar / (self.state.global_step - self._globalstep_last_logged), 4)
+            logs["learning_rate"] = self._get_learning_rate()
+
+            self._total_loss_scalar += tr_loss_scalar
+            self._globalstep_last_logged = self.state.global_step
+            self.store_flos()
+
+            self.log(logs)
+
+        metrics = None
+        if self.control.should_evaluate:
+            if isinstance(self.eval_dataset, dict):
+                metrics = []
+                for eval_dataset_name, eval_dataset in self.eval_dataset.items():
+                    metrics.append(self.evaluate(
+                        eval_dataset=eval_dataset,
+                        ignore_keys=ignore_keys_for_eval,
+                        metric_key_prefix=f"eval_{eval_dataset_name}",
+                    ))
+            else:
+                metrics = self.evaluate(ignore_keys=ignore_keys_for_eval)
+            self._report_to_hp_search(trial, self.state.global_step, metrics)
+
+        if self.control.should_save:
+            self._save_checkpoint(model, trial, metrics=metrics)
+            self.control = self.callback_handler.on_save(self.args, self.state, self.control)
+
+    def _save_checkpoint(self, model, trial, metrics=None):
+        # In all cases, including ddp/dp/deepspeed, self.model is always a reference to the model we
+        # want to save except FullyShardedDDP.
+        # assert unwrap_model(model) is self.model, "internal model should be a reference to self.model"
+
+        # Save model checkpoint
+        checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
+
+        if self.hp_search_backend is None and trial is None:
+            self.store_flos()
+
+        run_dir = self._get_output_dir(trial=trial)
+        output_dir = os.path.join(run_dir, checkpoint_folder)
+        self.save_model(output_dir, _internal_call=True)
+        if self.deepspeed:
+            # under zero3 model file itself doesn't get saved since it's bogus! Unless deepspeed
+            # config `stage3_gather_16bit_weights_on_model_save` is True
+            self.deepspeed.save_checkpoint(output_dir)
+
+        # Save optimizer and scheduler
+        if self.sharded_ddp == ShardedDDPOption.SIMPLE:
+            self.optimizer.consolidate_state_dict()
+
+        if is_torch_tpu_available():
+            import torch_xla.core.xla_model as xm
+            xm.rendezvous("saving_optimizer_states")
+            xm.save(self.optimizer.state_dict(), os.path.join(output_dir, OPTIMIZER_NAME))
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                xm.save(self.lr_scheduler.state_dict(), os.path.join(output_dir, SCHEDULER_NAME))
+                reissue_pt_warnings(caught_warnings)
+        elif is_sagemaker_mp_enabled():
+            import smdistributed.modelparallel.torch as smp
+            opt_state_dict = self.optimizer.local_state_dict(gather_if_shard=False)
+            smp.barrier()
+            if smp.rdp_rank() == 0 or smp.state.cfg.shard_optimizer_state:
+                smp.save(
+                    opt_state_dict,
+                    os.path.join(output_dir, OPTIMIZER_NAME),
+                    partial=True,
+                    v3=smp.state.cfg.shard_optimizer_state,
+                )
+            if self.args.should_save:
+                with warnings.catch_warnings(record=True) as caught_warnings:
+                    torch.save(self.lr_scheduler.state_dict(), os.path.join(output_dir, SCHEDULER_NAME))
+                reissue_pt_warnings(caught_warnings)
+                if self.do_grad_scaling:
+                    torch.save(self.scaler.state_dict(), os.path.join(output_dir, SCALER_NAME))
+        elif self.args.should_save and not self.deepspeed:
+            # deepspeed.save_checkpoint above saves model/optim/sched
+            torch.save(self.optimizer.state_dict(), os.path.join(output_dir, OPTIMIZER_NAME))
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                torch.save(self.lr_scheduler.state_dict(), os.path.join(output_dir, SCHEDULER_NAME))
+            reissue_pt_warnings(caught_warnings)
+            if self.do_grad_scaling:
+                torch.save(self.scaler.state_dict(), os.path.join(output_dir, SCALER_NAME))
+
+        # Determine the new best metric / best model checkpoint
+        if metrics is not None and self.args.metric_for_best_model is not None:
+            # print(f"\x1b[31;m1DEBUG metrics:\x1b[0m {metrics}")
+            # metric_to_check = self.args.metric_for_best_model
+            # if not metric_to_check.startswith("eval_"):
+            #     metric_to_check = f"eval_{metric_to_check}"
+            metric_value = sum([m[f"eval_val{i+1}_bleu"] for i,m in enumerate(metrics)])/4
+
+            operator = np.greater if self.args.greater_is_better else np.less
+            if (
+                self.state.best_metric is None
+                or self.state.best_model_checkpoint is None
+                or operator(metric_value, self.state.best_metric)
+            ):
+                self.state.best_metric = metric_value
+                self.state.best_model_checkpoint = output_dir
+
+        # Save the Trainer state
+        if self.args.should_save:
+            self.state.save_to_json(os.path.join(output_dir, TRAINER_STATE_NAME))
+
+        # Save RNG state in non-distributed training
+        rng_states = {
+            "python": random.getstate(),
+            "numpy": np.random.get_state(),
+            "cpu": torch.random.get_rng_state(),
+        }
+        if torch.cuda.is_available():
+            if self.args.local_rank == -1:
+                # In non distributed, we save the global CUDA RNG state (will take care of DataParallel)
+                rng_states["cuda"] = torch.cuda.random.get_rng_state_all()
+            else:
+                rng_states["cuda"] = torch.cuda.random.get_rng_state()
+
+        if is_torch_tpu_available():
+            rng_states["xla"] = xm.get_rng_state()
+
+        # A process can arrive here before the process 0 has a chance to save the model, in which case output_dir may
+        # not yet exist.
+        os.makedirs(output_dir, exist_ok=True)
+
+        if self.args.world_size <= 1:
+            torch.save(rng_states, os.path.join(output_dir, "rng_state.pth"))
+        else:
+            torch.save(rng_states, os.path.join(output_dir, f"rng_state_{self.args.process_index}.pth"))
+
+        if self.args.push_to_hub:
+            self._push_from_checkpoint(output_dir)
+
+        # Maybe delete some older checkpoints.
+        if self.args.should_save:
+            self._rotate_checkpoints(use_mtime=True, output_dir=run_dir)
 
 def exact_match_accuracy(refs, preds):
     assert len(refs) == len(preds)
@@ -84,6 +239,7 @@ def get_cmdline_args():
     parser.add_argument("--task", type=str, default="code_x_glue_cc_code_to_code_trans", help="task/dataset for training")
     parser.add_argument("--src", type=str, default="java", help="source language")
     parser.add_argument("--tgt", type=str, default="cs", help="target language")
+    parser.add_argument("--eval_accumulation_steps", default=None, type=int, help="to prevent GPU OOM errors for CodeSearchNet")
     parser.add_argument("--out_file", default=None, help="overwrite default file name of `test_output.json` with passed name.")
 
     # Parse arguments
@@ -184,6 +340,7 @@ def train(args):
         save_total_limit=args.save_total_limit,
         metric_for_best_model="bleu",
         load_best_model_at_end=True,
+        eval_accumulation_steps=args.eval_accumulation_steps,
     )
     data_collator = DataCollatorForSeq2Seq(
         tokenizer,
@@ -193,7 +350,7 @@ def train(args):
         # return_tensors="pt"
     )
     # intialize trainer.
-    trainer = Trainer(
+    trainer = args.trainer_class(
         model=model,
         data_collator=data_collator,
         args=training_args,
@@ -212,7 +369,7 @@ if __name__ == "__main__":
     bleu_metric = evaluate.load("bleu")
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     model = T5ForConditionalGeneration.from_pretrained(args.model_name)
-    
+    args.trainer_class = Trainer
     if args.task == "code_x_glue_cc_code_to_code_trans":
         input_key = args.src
         target_key = args.tgt
@@ -254,8 +411,20 @@ if __name__ == "__main__":
             input_key = "code"
             target_key = "docstring"
             subset = args.src
-        dataset = load_dataset(args.task, subset)
-
+        dataset = load_dataset(args.task, subset, split=["train", "validation[:20%]", 
+                                                         "validation[20%:40%]", "validation[40%:60%]", 
+                                                         "validation[60%:80%]", "validation[80%:]", "test"])
+        dataset = {
+            "train": dataset[0],
+            "validation": {
+                "val1": dataset[1],
+                "val2": dataset[2],
+                'val3': dataset[3],
+                "val4": dataset[4],
+            },
+            "test": dataset[5],
+        }
+        args.trainer_class = CodeSearchNetTrainer
     LOG_FILE_PATH = os.path.join(args.output_dir, "train_logs.jsonl")
     # interesting models:
     # 1. Salesforce/codet5-base-multi-sum (base)
@@ -263,7 +432,14 @@ if __name__ == "__main__":
     # 3. Salesforce/codet5p-770m (large)
     # 4. Salesforce/codet5-large
     if args.mode == "train": 
-        if isinstance(dataset, dict):
+        if args.task == "code_x_glue_ct_code_to_text":
+            dataset["test"] = dataset["test"].map(preprocess_function, batched=True, desc="Running tokenizer")
+            dataset["train"] = dataset["train"].map(preprocess_function, batched=True, desc="Running tokenizer")
+            dataset["validation"]["val1"] = dataset["validation"]["val1"].map(preprocess_function, batched=True, desc="Running tokenizer")
+            dataset["validation"]["val2"] = dataset["validation"]["val2"].map(preprocess_function, batched=True, desc="Running tokenizer")
+            dataset["validation"]["val3"] = dataset["validation"]["val3"].map(preprocess_function, batched=True, desc="Running tokenizer")
+            dataset["validation"]["val4"] = dataset["validation"]["val4"].map(preprocess_function, batched=True, desc="Running tokenizer")
+        elif isinstance(dataset, dict):
             for split in dataset:
                 dataset[split] = dataset[split].map(preprocess_function, batched=True, desc="Running tokenizer")
         else: dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
