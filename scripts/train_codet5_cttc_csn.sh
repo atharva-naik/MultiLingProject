@@ -1,4 +1,4 @@
-SRC_LANG="go"
+SRC_LANG="python"
 TGT_LANG="en"
 TASK="code_x_glue_ct_code_to_text"
 STEP=500
