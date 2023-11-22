@@ -3,8 +3,36 @@ import ast
 from typing import *
 from ast import fix_missing_locations
 
-TEST_CODE = """if x == 3 and y == True:
+TEST_CODE = """x = 3
+y = False
+if x == 3 and y == True:
     print(x*y)"""
+
+class VariableRenameTransform(ast.NodeTransformer):
+    """Stateful transformation that replaces all encountered variable names with
+    generic names of the form VAR_i"""
+    def __init__(self):
+        self.variable_count = 0
+        self.variable_mapping = {}
+
+    def reset(self):
+        self.variable_count = 0
+        self.variable_mapping = {}
+
+    def generic_variable_name(self):
+        self.variable_count += 1
+        return f'VAR_{self.variable_count}'
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Store):
+            # If it's a variable being assigned, replace its name
+            if node.id not in self.variable_mapping:
+                self.variable_mapping[node.id] = self.generic_variable_name()
+            node.id = self.variable_mapping[node.id]
+        elif isinstance(node.ctx, ast.Load):
+            # If it's a variable being loaded, replace its name if available
+            node.id = self.variable_mapping.get(node.id, node.id)
+        return node
 
 class BoolConditionModifier(ast.NodeTransformer):
     def visit_BoolOp(self, node: ast.BoolOp) -> Any:
@@ -87,13 +115,18 @@ class CodeTransformAugmenter:
             "compare_conditions": CompConditionModifier(),                 
             "bool_constants": BoolConstantModifier(),                 
             "bool_conditions": BoolConditionModifier(),
+            "variable_rename": VariableRenameTransform()
         }
 
     def apply(self, code: str):
         new_codes = []
         for rule, transformer in self.transformers.items():
+            unparsed_code = ast.unparse(ast.parse(code))
+            if hasattr(transformer, 'reset'):
+                transformer.reset() # reset the transformers that requrie resetting.
             new_code = ast.unparse(fix_missing_locations(transformer.visit(ast.parse(code))))
-            new_codes.append((rule, new_code))
+            if new_code != unparsed_code:
+                new_codes.append((rule, new_code))
         # new_tree = fix_missing_locations(BoolConditionModifier().visit(copy.deepcopy(tree)))
         # new_codes.append(ast.unparse(new_tree))
         # new_tree = fix_missing_locations(BoolConstantModifier().visit(copy.deepcopy(tree)))
