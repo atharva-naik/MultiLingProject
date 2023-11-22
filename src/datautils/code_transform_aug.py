@@ -1,12 +1,47 @@
 # do semantics preserving code transformations for Python source code with AST module.
 import ast
+import builtins
 from typing import *
 from ast import fix_missing_locations
 
-TEST_CODE = """x = 3
+TEST_CODE = """def do_something(z): print(z)
+x = 3
 y = False
 if x == 3 and y == True:
-    print(x*y)"""
+    do_something(x*y)"""
+
+class FunctionRenameTransform(ast.NodeTransformer):
+    def reset(self):
+        self.func_count = 0
+
+        self.func_mapping = {}
+        self.excluded_functions = set(dir(builtins))
+        
+    def __init__(self):
+        self.func_count = 0
+
+        self.func_mapping = {}
+        self.excluded_functions = set(dir(builtins))
+
+    def generic_func_name(self):
+        self.func_count += 1
+
+        return f'FUNC_{self.func_count}'
+
+    def visit_Name(self, node):
+        node.id = self.func_mapping.get(node.id, node.id)
+        return node
+
+    def visit_FunctionDef(self, node):
+        # Exclude standard Python functions and imported library functions
+        if node.name not in self.excluded_functions:
+            # Rename the user-defined function
+            generic_name = self.generic_func_name()
+            self.func_mapping[node.name] = generic_name
+            node.name = generic_name
+        # Visit the body of the function
+        self.generic_visit(node)
+        return node
 
 class VariableRenameTransform(ast.NodeTransformer):
     """Stateful transformation that replaces all encountered variable names with
@@ -115,7 +150,8 @@ class CodeTransformAugmenter:
             "compare_conditions": CompConditionModifier(),                 
             "bool_constants": BoolConstantModifier(),                 
             "bool_conditions": BoolConditionModifier(),
-            "variable_rename": VariableRenameTransform()
+            "variable_rename": VariableRenameTransform(),
+            "function_rename": FunctionRenameTransform(),
         }
 
     def apply(self, code: str):
