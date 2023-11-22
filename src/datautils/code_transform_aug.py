@@ -6,16 +6,48 @@ from ast import fix_missing_locations
 TEST_CODE = """if x == 3 and y == True:
     print(x*y)"""
 
-class CompConditionModifier(ast.NodeTransformer):
-    # def visit_If(self, node: ast.If) -> Any:
-    #     print(node.test, ast.unparse(node.test))
-    #     return super().generic_visit(node)
+class BoolConditionModifier(ast.NodeTransformer):
+    def visit_BoolOp(self, node: ast.BoolOp) -> Any:
+        # add not on top to negate the effect.
+        for i in range(len(node.values)):
+            node.values[i] = ast.UnaryOp(
+                op=ast.Not(),
+                operand=node.values[i],
+            )
+        if isinstance(node.op, ast.Or):
+            node.op = ast.And()
+        elif isinstance(node.op, ast.And):
+            node.op = ast.Or()
+        node = ast.UnaryOp(
+            op=ast.Not(),
+            operand=node,
+        )
+        return node# super().generic_visit(node)
 
+class BoolConstantModifier(ast.NodeTransformer):
+    def visit_Compare(self, node: ast.Compare) -> Any:
+        if (len(node.ops) == 1 and isinstance(node.ops[0], (ast.NotEq, ast.Eq)) and 
+            len(node.comparators) == 1 and isinstance(node.comparators[0], ast.Constant)
+            and node.comparators[0].value in [True, False]):
+            
+            if isinstance(node.ops[0], ast.NotEq):
+                node.ops[0] = ast.Eq()
+            elif isinstance(node.ops[0], ast.Eq):
+                node.ops[0] = ast.NotEq()
+            if node.comparators[0].value == True:
+                node.comparators[0].value = False
+            elif node.comparators[0].value == False:
+                node.comparators[0].value = True
+            return node
+        else:
+            return super().generic_visit(node)
+
+class CompConditionModifier(ast.NodeTransformer):
     def visit_Compare(self, node: ast.Compare) -> Any:
         # for simple conditions with just one operator:
         if len(node.ops) == 1:
             # flip the comparison operator.
-            print(ast.unparse(node), node.ops)
+            # print(ast.unparse(node), node.ops)
             if isinstance(node.ops[0], ast.Lt):
                 node.ops[0] = ast.GtE()
             elif isinstance(node.ops[0], ast.GtE):
@@ -36,7 +68,6 @@ class CompConditionModifier(ast.NodeTransformer):
                 node.ops[0] = ast.IsNot()
             elif isinstance(node.ops[0], ast.IsNot):
                 node.ops[0] = ast.Is()
-            print(ast.unparse(node), node.ops)
             # add not on top to negate the effect.
             node = ast.UnaryOp(
                 op=ast.Not(),
@@ -52,14 +83,21 @@ class CompConditionModifier(ast.NodeTransformer):
 
 class CodeTransformAugmenter:
     def __init__(self):
-        pass
+        self.transformers = {
+            "compare_conditions": CompConditionModifier(),                 
+            "bool_constants": BoolConstantModifier(),                 
+            "bool_conditions": BoolConditionModifier(),
+        }
 
     def apply(self, code: str):
-        tree = ast.parse(code)
-        new_tree = fix_missing_locations(CompConditionModifier().visit(tree))
         new_codes = []
-        new_codes.append(ast.unparse(new_tree))
-
+        for rule, transformer in self.transformers.items():
+            new_code = ast.unparse(fix_missing_locations(transformer.visit(ast.parse(code))))
+            new_codes.append((rule, new_code))
+        # new_tree = fix_missing_locations(BoolConditionModifier().visit(copy.deepcopy(tree)))
+        # new_codes.append(ast.unparse(new_tree))
+        # new_tree = fix_missing_locations(BoolConstantModifier().visit(copy.deepcopy(tree)))
+        # new_codes.append(ast.unparse(new_tree))
         return new_codes
 
     def __call__(self, code: str) -> Any:
