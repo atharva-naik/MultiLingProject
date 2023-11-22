@@ -7,6 +7,7 @@ from ast import fix_missing_locations
 TEST_CODE = """def do_something(z): print(z)
 x = 3
 y = False
+z = x+y
 if x == 3 and y == True:
     do_something(x*y)"""
 
@@ -144,6 +145,39 @@ class CompConditionModifier(ast.NodeTransformer):
     #     print(node.values)
     #     return super().generic_visit(node)
 
+class VarDecPermuteTransform(ast.NodeTransformer):
+    def __init__(self):
+        self.variables_to_move = set()
+        self.permuted_statements = []
+    
+    def reset(self):
+        self.variables_to_move = set()
+        self.permuted_statements = []
+
+    def check_assign_deps(self, node):
+        # Check if the assignment depends on other variables
+        dependencies = set()
+        for value_node in ast.walk(node.value):
+            if isinstance(value_node, ast.Name):
+                dependencies.add(value_node.id)
+        # If no dependencies, return true
+        if not dependencies: return True
+        return False
+
+    def transform(self, tree):
+        permuted_assigns = []
+        other_stmts = []
+        for stmt in tree.body:
+            if isinstance(stmt, ast.Assign):
+                # print(self.check_assign_deps(stmt))
+                if self.check_assign_deps(stmt): 
+                    permuted_assigns.append(stmt)
+                else: other_stmts.append(stmt)
+            else: other_stmts.append(stmt)
+        tree.body = permuted_assigns+other_stmts
+
+        return tree
+
 class CodeTransformAugmenter:
     def __init__(self):
         self.transformers = {
@@ -152,6 +186,7 @@ class CodeTransformAugmenter:
             "bool_conditions": BoolConditionModifier(),
             "variable_rename": VariableRenameTransform(),
             "function_rename": FunctionRenameTransform(),
+            "permute_statemtns": VarDecPermuteTransform()
         }
 
     def apply(self, code: str):
@@ -160,7 +195,10 @@ class CodeTransformAugmenter:
             unparsed_code = ast.unparse(ast.parse(code))
             if hasattr(transformer, 'reset'):
                 transformer.reset() # reset the transformers that requrie resetting.
-            new_code = ast.unparse(fix_missing_locations(transformer.visit(ast.parse(code))))
+            if hasattr(transformer, 'transform'):
+                new_code = ast.unparse(fix_missing_locations(transformer.transform(ast.parse(code))))
+                print(new_code)
+            else: new_code = ast.unparse(fix_missing_locations(transformer.visit(ast.parse(code))))
             if new_code != unparsed_code:
                 new_codes.append((rule, new_code))
         # new_tree = fix_missing_locations(BoolConditionModifier().visit(copy.deepcopy(tree)))
