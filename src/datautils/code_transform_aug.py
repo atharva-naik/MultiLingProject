@@ -186,7 +186,7 @@ class CodeTransformAugmenter:
             "bool_conditions": BoolConditionModifier(),
             "variable_rename": VariableRenameTransform(),
             "function_rename": FunctionRenameTransform(),
-            "permute_statemtns": VarDecPermuteTransform()
+            "permute_statements": VarDecPermuteTransform()
         }
 
     def apply(self, code: str):
@@ -197,7 +197,7 @@ class CodeTransformAugmenter:
                 transformer.reset() # reset the transformers that requrie resetting.
             if hasattr(transformer, 'transform'):
                 new_code = ast.unparse(fix_missing_locations(transformer.transform(ast.parse(code))))
-                print(new_code)
+                # print(new_code)
             else: new_code = ast.unparse(fix_missing_locations(transformer.visit(ast.parse(code))))
             if new_code != unparsed_code:
                 new_codes.append((rule, new_code))
@@ -213,4 +213,17 @@ class CodeTransformAugmenter:
 # main
 if __name__ == "__main__":
     aug = CodeTransformAugmenter()
-    aug.apply(TEST_CODE)
+    import json
+    from tqdm import tqdm
+    from datasets import load_dataset
+    # pick the top 100k most relevant instances.
+    conala = load_dataset("neulab/conala", "mined", split="train[:100000]")
+    write_path = "/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl"
+    open(write_path, "w")
+    for row in tqdm(conala):
+        rec = {"snippet": row['snippet']}
+        try: transformed_codes = aug(rec['snippet'])
+        except SyntaxError: transformed_codes = []
+        rec["transforms"] = transformed_codes
+        with open(write_path, "a") as f:
+            f.write(json.dumps(rec)+"\n")

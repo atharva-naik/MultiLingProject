@@ -9,11 +9,16 @@ import warnings
 import numpy as np
 from typing import *
 from tqdm import tqdm
-from torch.utils.data import Dataset
+from torch.optim import AdamW
+from collections import defaultdict
+from losses.info_nce import InfoNCE
+from torch.optim.lr_scheduler import LambdaLR
 from datasets import load_dataset, load_metric
+from torch.utils.data import Dataset, DataLoader
+from sklearn.model_selection import train_test_split
 from src.evaluator.CodeBLEU.calc_code_bleu import codebleu_fromstr
 from transformers.trainer import PREFIX_CHECKPOINT_DIR, ShardedDDPOption, is_torch_tpu_available, OPTIMIZER_NAME, SCHEDULER_NAME, reissue_pt_warnings, is_sagemaker_mp_enabled, SCALER_NAME, TRAINER_STATE_NAME
-from transformers import AutoTokenizer, AutoModel, T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments, DataCollatorForSeq2Seq, pipeline
+from transformers import AutoTokenizer, AutoModel, T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments, DataCollatorForSeq2Seq, pipeline, get_linear_schedule_with_warmup
 
 TREE_SITTER_LANG_CODE_CORRECTIONS = {
     "cs": "c_sharp"
@@ -193,6 +198,43 @@ def preprocess_function(examples):
 
     return model_inputs
 
+class PretrainingDataset(Dataset):
+    def __init__(self, data: List[dict], tokenizer, 
+                 max_length=200, padding="max_length"):
+        self.data = []
+        # do tokenization.
+        for i in tqdm(range(len(data)), desc="tokenizing data"):
+            task_tag = data[i]['stratify']
+            model_inputs = tokenizer(task_tag+" "+data[i]['src_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+            rev_task_tag = data[i]['tgt_lang']+"-"+data[i]['src_lang']
+            labels = tokenizer(data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+            for key in model_inputs:
+                model_inputs[key] = model_inputs[key][0]
+            model_inputs["labels"] = labels['input_ids'][0]
+            # print(rev_task_tag, data[i]['tgt_text'])
+            contrast = tokenizer(rev_task_tag+" "+data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+            for key in contrast:
+                model_inputs[f"label_{key}"] = contrast[key][0]
+
+            self.data.append(model_inputs)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+# def pretrain_collate_fn(batch):
+#     print(batch)
+#     keys = batch[0].keys()
+#     batched_inp = {key: [] for key in keys}
+#     for i in range(len(batch)):
+#         for key in keys:
+#             batched_inp[key].append(batch[i][key][0])
+#     batched_inp = {key: torch.stack(val) for key, val in batched_inp.items()}
+
+#     return batched_inp
+
 def compute_metrics(pred):
     pred_logits = pred.predictions[0] # n_samples x seqlen x vocab_size
     # pred.predictions[1] # embeddings
@@ -218,7 +260,11 @@ def get_cmdline_args():
     parser = argparse.ArgumentParser(description="Fine-tuning CodeT5 for multilingual text and code tasks")
 
     # Add arguments
-    parser.add_argument("--mode", type=str, default="train", choices=["train", "eval"], help="training/evaluation mode")
+    parser.add_argument("--mode", type=str, default="train", choices=["train", "eval", "train_mrasp"], help="training/evaluation mode")
+    parser.add_argument("--tpath", type=str, default="/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl", 
+                        help="code transformations data augmentation")
+    parser.add_argument("--no_contrast", action="store_true", help="mRASP without contrastive loss")
+    parser.add_argument("--mrasp_lambda", default=0.05, type=float, help="loss function weights")
     # parser.add_argument("--checkpoint_path", type=str, default=None)
     parser.add_argument("--output_dir", type=str, required=True, help="Directory where the model checkpoints and predictions will be stored.")
     # parser.add_argument("--wandb", action="store_true", help="use WandB for logging")
@@ -315,6 +361,188 @@ def eval(args):
             "references": label_str,
         }, f, indent=4)
 
+TRANS_NL_DATA = {
+    "src/translator/res/conala_with_dan_Latn.jsonl": "danish",
+    "src/translator/res/conala_with_deu_Latn.jsonl": "german",
+    "src/translator/res/conala_with_fra_Latn.jsonl": "french",
+    "src/translator/res/conala_with_jp_translations.jsonl": "jp",
+    "src/translator/res/conala_with_rus_Cyrl.jsonl": "russian",
+    "src/translator/res/conala_with_spa_Latn.jsonl": "spanish"
+}
+def split_data(data, val_size: float=0.005):
+    stratification_info = [rec['stratify'] for rec in data]
+    train_data, val_data = train_test_split(data, test_size=val_size, stratify=stratification_info)
+
+    return train_data, val_data
+
+def eval_mrasp(model, valloader, args, epoch_i):
+    model.eval()
+    val_bar = tqdm(enumerate(valloader), 
+                   total=len(valloader))
+    losses = []
+    for step, batch in val_bar:
+        with torch.no_grad(): 
+            batch = {k: v.cuda() for k,v in batch.items() if not k.startswith("label_")}
+            outputs = model(**batch)
+            loss = outputs.loss
+            losses.append(loss.item())
+            val_bar.set_description(f"{epoch_i+1}/{args.num_train_epochs}: bl: {loss.item():.3f}, l: {np.mean(losses):.3f}")
+
+    return np.mean(losses)
+
+def train_mrasp(args):
+    # load CoNaLa-mined dataset (top-100k) for pre-training.
+    from src.datautils import read_jsonl
+    conala_mined_dataset = load_dataset("neulab/conala", "mined", split="train[:100000]")
+    conala_code_transforms = read_jsonl(args.tpath)
+    codegen_data = []
+    for i in tqdm(range(len(conala_mined_dataset))):
+        inst = conala_mined_dataset[i]
+        codegen_data.append({
+            "task": "codegen",
+            "src_lang": "en",
+            "tgt_lang": "py",
+            "stratify": "en-py",
+            "src_text": inst["intent"],
+            "tgt_text": inst["snippet"]
+        })
+        assert inst['snippet'] == conala_code_transforms[i]['snippet']
+        for transformed_pl in conala_code_transforms[i]['transforms']:
+            codegen_data.append({
+                "task": "codegen",
+                "src_lang": "en",
+                "tgt_lang": "py",
+                "stratify": "en-py",
+                "src_text": inst["intent"],
+                "tgt_text": transformed_pl[1]
+            })
+    mcodegen_data = []
+    doctrans_data = []
+    for path, src_lang in TRANS_NL_DATA.items():
+        trans_data = read_jsonl(path)
+        nl_to_trans_nl = {i["intent"]: i[f"{src_lang}_translation"] for i in trans_data}
+        for i in tqdm(range(len(codegen_data))):
+            inst = codegen_data[i]
+            mcodegen_data.append({
+                "task": "codegen",
+                "src_lang": src_lang,
+                "tgt_lang": "py",
+                "stratify": f"{src_lang}-py",
+                "src_text": nl_to_trans_nl[inst["src_text"]],
+                "tgt_text": inst["tgt_text"]
+            })
+        for i in range(len(trans_data)):
+            doctrans_data.append({
+                "task": "doctrans",
+                "src_lang": "en",
+                "tgt_lang": src_lang,
+                "stratify": f"en-{src_lang}",
+                "src_text": trans_data[i]["intent"],
+                "tgt_text": trans_data[i][f"{src_lang}_translation"]
+            })
+            doctrans_data.append({
+                "task": "doctrans",
+                "src_lang": src_lang,
+                "tgt_lang": "en",
+                "stratify": f"{src_lang}-en",
+                "src_text": trans_data[i][f"{src_lang}_translation"],
+                "tgt_text": trans_data[i]["intent"]
+            })
+    codegen_data = codegen_data+mcodegen_data
+    codesum_data = []
+    for i in tqdm(range(len(codegen_data))):
+        codesum_data.append({
+            "task": "codesum",
+            "src_lang": codegen_data[i]['tgt_lang'],
+            "tgt_lang": codegen_data[i]['src_lang'],
+            'stratify': f'py-{codegen_data[i]["src_lang"]}',
+            "src_text": inst["tgt_text"],
+            "tgt_text": inst["src_text"]
+        })
+    print(f"{len(codegen_data)} CodeGen instances")
+    print(f"{len(codesum_data)} CodeSum instances")
+    print(f"{len(doctrans_data)} DocTrans instances")
+    
+    cg_train, cg_val = split_data(codegen_data)
+    cs_train, cs_val = split_data(codesum_data)
+    dt_train, dt_val = split_data(doctrans_data)
+    train_data = cg_train + cs_train + dt_train
+    val_data = cg_val + cs_val + dt_val
+    
+    print(f"train data size: {len(train_data)}")
+    print(f"val data size: {len(val_data)}")
+    train_dist = defaultdict(lambda: 0)
+    val_dist = defaultdict(lambda: 0)
+    for rec in train_data: train_dist[rec['stratify']] += 1
+    for rec in val_data: val_dist[rec['stratify']] += 1
+    train_dist = dict(train_dist)
+    val_dist = dict(val_dist)
+    for subset in train_dist:
+        print('train-'+subset+f": {round(100*train_dist[subset]/len(train_data), 2)}%")
+        print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    train_dataset = PretrainingDataset(train_data, tokenizer)
+    val_dataset = PretrainingDataset(val_data, tokenizer)
+    trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
+    valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
+    
+    # create scheduler and optimizer.
+    model = T5ForConditionalGeneration.from_pretrained(args.model_name) 
+    num_train_steps = args.num_train_epochs*len(trainloader)
+    optimizer = AdamW(model.parameters(), lr=args.learning_rate, eps=1e-12)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=1000, num_training_steps=num_train_steps)
+
+    info_nce_loss = InfoNCE(temperature=0.001)
+    best_eval_loss = 100000
+    model.cuda()
+    for epoch_i in range(args.num_train_epochs):
+        train_bar = tqdm(enumerate(trainloader), 
+                         total=len(trainloader))
+        train_losses = []
+        for step, batch in train_bar:
+            # print(batch)
+            for key in batch:
+                batch[key] = batch[key].cuda()
+            model.train()
+            optimizer.zero_grad()
+            seq2seq_batch = {k: v for k,v in batch.items() if not k.startswith("label_")}
+            
+            if not args.no_contrast:
+                contrast_batch = {k.replace("label_", ""): v for k,v in batch.items() if k.startswith("label_")}
+                seq2seq_outputs = model(**seq2seq_batch)
+                e1 = seq2seq_outputs.encoder_last_hidden_state.mean(axis=1)
+                e2 = model.encoder(**contrast_batch).last_hidden_state.mean(axis=1)
+                loss = seq2seq_outputs.loss+args.mrasp_lambda*info_nce_loss(e1, e2)
+            else: 
+                seq2seq_outputs = model(**seq2seq_batch)
+                loss = seq2seq_outputs.loss
+
+            loss.backward()
+            if step % args.gradient_accumulation_steps:
+                optimizer.step()
+                scheduler.step()
+            train_losses.append(loss.item())
+            train_bar.set_description(f"{epoch_i+1}/{args.num_train_epochs}: bl: {loss.item():.3f}, l: {np.mean(train_losses):.3f}")
+            if (step != 0 and step % args.eval_steps == 0) or (step+1) == len(trainloader):
+                eval_loss = eval_mrasp(model, valloader, args, epoch_i)
+                print(f"eval_loss: {eval_loss}")
+                ckpt_dict = {
+                    "step": step,
+                    "epoch": epoch_i+1,
+                    "eval_loss": eval_loss,
+                    "best_eval_loss": best_eval_loss,
+                    "model_state_dict": model.state_dict(),
+                    "optim_state_dict": optimizer.state_dict()
+                }
+                last_model_save_path = os.path.join(args.output_dir, "last_model.pth")
+                torch.save(obj=ckpt_dict, f=last_model_save_path)
+                if eval_loss < best_eval_loss:
+                    best_eval_loss = eval_loss
+                    print(f"saving model with best_eval_loss: {best_eval_loss}")
+                    best_model_save_path = os.path.join(args.output_dir, "best_model.pth")
+                    torch.save(obj=ckpt_dict, f=best_model_save_path)
+
 def train(args):
     """code for fine-tuning CodeT5 for seq2seq translation"""
     # sacrebleu_metric = evaluate.load("sacrebleu")
@@ -366,84 +594,87 @@ def train(args):
 # main
 if __name__ == "__main__":
     args = get_cmdline_args()
-    bleu_metric = evaluate.load("bleu")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-    model = T5ForConditionalGeneration.from_pretrained(args.model_name)
-    args.trainer_class = Trainer
-    if args.task == "code_x_glue_cc_code_to_code_trans":
-        input_key = args.src
-        target_key = args.tgt
-        dataset = load_dataset(args.task)
+    if args.mode == "train_mrasp":
+        train_mrasp(args)
+    else:
+        bleu_metric = evaluate.load("bleu")
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        model = T5ForConditionalGeneration.from_pretrained(args.model_name)
+        args.trainer_class = Trainer
+        if args.task == "code_x_glue_cc_code_to_code_trans":
+            input_key = args.src
+            target_key = args.tgt
+            dataset = load_dataset(args.task)
 
-    elif args.task == "code_x_glue_tt_text_to_text":
-        if args.tgt == "en":
-            input_key = "source"
-            target_key = "target"
-            subset =  f"{args.src}_{args.tgt}"
-        else:
-            input_key = "target"
-            target_key = "source"
-            subset =  f"{args.tgt}_{args.src}"
-        dataset = load_dataset(args.task, subset)
+        elif args.task == "code_x_glue_tt_text_to_text":
+            if args.tgt == "en":
+                input_key = "source"
+                target_key = "target"
+                subset =  f"{args.src}_{args.tgt}"
+            else:
+                input_key = "target"
+                target_key = "source"
+                subset =  f"{args.tgt}_{args.src}"
+            dataset = load_dataset(args.task, subset)
 
-    elif args.task == "neulab/conala":
-        if args.src == "en": # code generation.
-            input_key = "intent"
-            target_key = "snippet"
-        elif args.tgt == "en": # code summarization.
-            input_key = "snippet"
-            target_key = "intent"
-        subset = "curated"
-        # split train to get validation (10% of the train dataset)
-        dataset = load_dataset(args.task, subset, split=["train[:90%]", "train[90%:]", "test"])
-        dataset = {
-            "train": dataset[0],
-            "validation": dataset[1],
-            "test": dataset[2]
-        }
-    
-    elif args.task == "code_x_glue_ct_code_to_text":
-        if args.src == "en": # code generation.
-            input_key = "docstring"
-            target_key = "code"
-            subset = args.tgt
-        elif args.tgt == "en": # code summarization.
-            input_key = "code"
-            target_key = "docstring"
-            subset = args.src
-        dataset = load_dataset(args.task, subset, split=["train", "validation[:20%]", 
-                                                         "validation[20%:40%]", "validation[40%:60%]", 
-                                                         "validation[60%:80%]", "validation[80%:]", "test"])
-        dataset = {
-            "train": dataset[0],
-            "validation": {
-                "val1": dataset[1],
-                "val2": dataset[2],
-                'val3': dataset[3],
-                "val4": dataset[4],
-            },
-            "test": dataset[5],
-        }
-        args.trainer_class = CodeSearchNetTrainer
-    LOG_FILE_PATH = os.path.join(args.output_dir, "train_logs.jsonl")
-    # interesting models:
-    # 1. Salesforce/codet5-base-multi-sum (base)
-    # 2. Salesforce/codet5p-2b (extra large)
-    # 3. Salesforce/codet5p-770m (large)
-    # 4. Salesforce/codet5-large
-    if args.mode == "train": 
-        if args.task == "code_x_glue_ct_code_to_text":
-            dataset["test"] = dataset["test"].map(preprocess_function, batched=True, desc="Running tokenizer")
-            dataset["train"] = dataset["train"].map(preprocess_function, batched=True, desc="Running tokenizer")
-            dataset["validation"]["val1"] = dataset["validation"]["val1"].map(preprocess_function, batched=True, desc="Running tokenizer")
-            dataset["validation"]["val2"] = dataset["validation"]["val2"].map(preprocess_function, batched=True, desc="Running tokenizer")
-            dataset["validation"]["val3"] = dataset["validation"]["val3"].map(preprocess_function, batched=True, desc="Running tokenizer")
-            dataset["validation"]["val4"] = dataset["validation"]["val4"].map(preprocess_function, batched=True, desc="Running tokenizer")
-        elif isinstance(dataset, dict):
-            for split in dataset:
-                dataset[split] = dataset[split].map(preprocess_function, batched=True, desc="Running tokenizer")
-        else: dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
-        train(args)
-    elif args.mode == "eval": 
-        test_dataset = SimpleDataset(data=[rec[input_key] for rec in dataset["test"]])
-        eval(args)
+        elif args.task == "neulab/conala":
+            if args.src == "en": # code generation.
+                input_key = "intent"
+                target_key = "snippet"
+            elif args.tgt == "en": # code summarization.
+                input_key = "snippet"
+                target_key = "intent"
+            subset = "curated"
+            # split train to get validation (10% of the train dataset)
+            dataset = load_dataset(args.task, subset, split=["train[:90%]", "train[90%:]", "test"])
+            dataset = {
+                "train": dataset[0],
+                "validation": dataset[1],
+                "test": dataset[2]
+            }
+        
+        elif args.task == "code_x_glue_ct_code_to_text":
+            if args.src == "en": # code generation.
+                input_key = "docstring"
+                target_key = "code"
+                subset = args.tgt
+            elif args.tgt == "en": # code summarization.
+                input_key = "code"
+                target_key = "docstring"
+                subset = args.src
+            dataset = load_dataset(args.task, subset, split=["train", "validation[:20%]", 
+                                                            "validation[20%:40%]", "validation[40%:60%]", 
+                                                            "validation[60%:80%]", "validation[80%:]", "test"])
+            dataset = {
+                "train": dataset[0],
+                "validation": {
+                    "val1": dataset[1],
+                    "val2": dataset[2],
+                    'val3': dataset[3],
+                    "val4": dataset[4],
+                },
+                "test": dataset[5],
+            }
+            args.trainer_class = CodeSearchNetTrainer
+        LOG_FILE_PATH = os.path.join(args.output_dir, "train_logs.jsonl")
+        # interesting models:
+        # 1. Salesforce/codet5-base-multi-sum (base)
+        # 2. Salesforce/codet5p-2b (extra large)
+        # 3. Salesforce/codet5p-770m (large)
+        # 4. Salesforce/codet5-large
+        if args.mode == "train": 
+            if args.task == "code_x_glue_ct_code_to_text":
+                dataset["test"] = dataset["test"].map(preprocess_function, batched=True, desc="Running tokenizer")
+                dataset["train"] = dataset["train"].map(preprocess_function, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val1"] = dataset["validation"]["val1"].map(preprocess_function, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val2"] = dataset["validation"]["val2"].map(preprocess_function, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val3"] = dataset["validation"]["val3"].map(preprocess_function, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val4"] = dataset["validation"]["val4"].map(preprocess_function, batched=True, desc="Running tokenizer")
+            elif isinstance(dataset, dict):
+                for split in dataset:
+                    dataset[split] = dataset[split].map(preprocess_function, batched=True, desc="Running tokenizer")
+            else: dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
+            train(args)
+        elif args.mode == "eval": 
+            test_dataset = SimpleDataset(data=[rec[input_key] for rec in dataset["test"]])
+            eval(args)
