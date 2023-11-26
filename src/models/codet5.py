@@ -217,30 +217,47 @@ class PredictionDataset(Dataset):
         return self.data[index]
 
 class PretrainingDataset(Dataset):
-    def __init__(self, data: List[dict], tokenizer, 
+    def __init__(self, data: List[dict], tokenizer, eval: bool,
                  max_length=200, padding="max_length"):
         self.data = []
+        self.eval = eval
+        self.max_length = max_length
+        self.padding = padding
+        self.tokenizer = tokenizer
         # do tokenization.
         for i in tqdm(range(len(data)), desc="tokenizing data"):
-            task_tag = data[i]['stratify']
-            model_inputs = tokenizer(task_tag+" "+data[i]['src_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
-            rev_task_tag = data[i]['tgt_lang']+"-"+data[i]['src_lang']
-            labels = tokenizer(data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
-            for key in model_inputs:
-                model_inputs[key] = model_inputs[key][0]
-            model_inputs["labels"] = labels['input_ids'][0]
-            # print(rev_task_tag, data[i]['tgt_text'])
-            contrast = tokenizer(rev_task_tag+" "+data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
-            for key in contrast:
-                model_inputs[f"label_{key}"] = contrast[key][0]
-
+            if eval:
+                task_tag = data[i]['stratify']
+                model_inputs = tokenizer(task_tag+" "+data[i]['src_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                rev_task_tag = data[i]['tgt_lang']+"-"+data[i]['src_lang']
+                labels = tokenizer(data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                for key in model_inputs:
+                    model_inputs[key] = model_inputs[key][0]
+                model_inputs["labels"] = labels['input_ids'][0]
+                # print(rev_task_tag, data[i]['tgt_text'])
+                contrast = tokenizer(rev_task_tag+" "+data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                for key in contrast:
+                    model_inputs[f"label_{key}"] = contrast[key][0]
+            else: model_inputs = data[i]
             self.data.append(model_inputs)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, index):
-        return self.data[index]
+        tokenizer = self.tokenizer
+        if not self.eval:
+            task_tag = self.data[index]['stratify']
+            model_inputs = tokenizer(task_tag+" "+self.data[index]['src_text'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            rev_task_tag = self.data[index]['tgt_lang']+"-"+self.data[index]['src_lang']
+            labels = tokenizer(self.data[index]['tgt_text'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            for key in model_inputs:
+                model_inputs[key] = model_inputs[key][0]
+            model_inputs["labels"] = labels['input_ids'][0]
+            # print(rev_task_tag, data[i]['tgt_text'])
+            contrast = tokenizer(rev_task_tag+" "+self.data[index]['tgt_text'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+        else: model_inputs = self.data[index]
+        return model_inputs
 
 # def pretrain_collate_fn(batch):
 #     print(batch)
@@ -279,7 +296,7 @@ def get_cmdline_args():
 
     # Add arguments
     parser.add_argument("--mode", type=str, default="train", help="training/evaluation mode",
-                        choices=["train", "eval", "train_mrasp", "predict_mrasp"])
+                        choices=["train", "eval", "pretrain_mrasp", "predict_mrasp"])
     parser.add_argument("--tpath", type=str, default="/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl", 
                         help="code transformations data augmentation")
     parser.add_argument("--no_contrast", action="store_true", help="mRASP without contrastive loss")
@@ -379,15 +396,29 @@ def eval(args):
             "preds": pred_str,
             "references": label_str,
         }, f, indent=4)
-
-TRANS_NL_DATA = {
-    "src/translator/res/conala_with_dan_Latn.jsonl": "danish",
-    "src/translator/res/conala_with_deu_Latn.jsonl": "german",
-    "src/translator/res/conala_with_fra_Latn.jsonl": "french",
-    "src/translator/res/conala_with_jp_translations.jsonl": "jp",
-    "src/translator/res/conala_with_rus_Cyrl.jsonl": "russian",
-    "src/translator/res/conala_with_spa_Latn.jsonl": "spanish"
+BASE_DIR = "/data/tir/projects/tir4/users/ymathur/mnlp/MultiLingProject/src/translator/res"
+CONALA_TRANS_NL_DATA = {
+    "conala_with_dan_Latn.jsonl": "danish",
+    "conala_with_deu_Latn.jsonl": "german",
+    "conala_with_fra_Latn.jsonl": "french",
+    "conala_with_jp_translations.jsonl": "jp",
+    "conala_with_rus_Cyrl.jsonl": "russian",
+    "conala_with_spa_Latn.jsonl": "spanish",
+    "conala_with_lij_Latn.jsonl": "latvian",
+    "conala_with_zho_Hans.jsonl": "chinese",
+    "conala_with_arb_Latn.jsonl": "arabic",
+    "conala_with_nob_Latn.jsonl": "norwegian"
 }
+CONALA_TRANS_NL_DATA = {os.path.join(BASE_DIR, k): v for k,v in CONALA_TRANS_NL_DATA.items()}
+CODESEARCHNET_TRANS_NL_DATA = {
+    "code_search_net_with_dan_Latn.jsonl": "danish",
+    "code_search_net_with_deu_Latn.jsonl": "german",
+    "code_search_net_with_fra_Latn.jsonl": "french",
+    "code_search_net_with_jpn_Jpan.jsonl": "jp",
+    "code_search_net_with_rus_Cyrl.jsonl": "russian",
+    "code_search_net_with_spa_Latn.jsonl": "spanish"
+}
+CODESEARCHNET_TRANS_NL_DATA = {os.path.join(BASE_DIR, k): v for k,v in CODESEARCHNET_TRANS_NL_DATA.items()}
 def split_data(data, val_size: float=0.005):
     stratification_info = [rec['stratify'] for rec in data]
     train_data, val_data = train_test_split(data, test_size=val_size, stratify=stratification_info)
@@ -534,7 +565,7 @@ def predict_mrasp(args):
             "references": label_str,
         }, f, indent=4)
 
-def train_mrasp(args):
+def pretrain_mrasp(args):
     # load CoNaLa-mined dataset (top-100k) for pre-training.
     from src.datautils import read_jsonl
     conala_mined_dataset = load_dataset("neulab/conala", "mined", split="train[:100000]")
@@ -563,7 +594,7 @@ def train_mrasp(args):
         #     })
     mcodegen_data = []
     doctrans_data = []
-    for path, src_lang in TRANS_NL_DATA.items():
+    for path, src_lang in CONALA_TRANS_NL_DATA.items():
         trans_data = read_jsonl(path)
         nl_to_trans_nl = {i["intent"]: i[f"{src_lang}_translation"] for i in trans_data}
         for i in tqdm(range(len(codegen_data))):
@@ -627,8 +658,8 @@ def train_mrasp(args):
         print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-    train_dataset = PretrainingDataset(train_data, tokenizer)
-    val_dataset = PretrainingDataset(val_data, tokenizer)
+    train_dataset = PretrainingDataset(train_data, tokenizer, eval=False)
+    val_dataset = PretrainingDataset(val_data, tokenizer, eval=True)
     trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
     valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
     
@@ -641,10 +672,13 @@ def train_mrasp(args):
     info_nce_loss = InfoNCE(temperature=0.001)
     best_eval_loss = 100000
     model.cuda()
+    log_file_path = os.path.join(args.output_dir, "output.jsonl")
     for epoch_i in range(args.num_train_epochs):
         train_bar = tqdm(enumerate(trainloader), 
                          total=len(trainloader))
         train_losses = []
+        with open(log_file_path, "a") as logf:
+            logf.write(json.dumps({"epoch_i": epoch_i+1, "msg": "starting epoch"})+"\n")
         for step, batch in train_bar:
             # print(batch)
             for key in batch:
@@ -670,7 +704,16 @@ def train_mrasp(args):
             train_losses.append(loss.item())
             train_bar.set_description(f"{epoch_i+1}/{args.num_train_epochs}: bl: {loss.item():.3f}, l: {np.mean(train_losses):.3f}")
             if (step != 0 and step % args.eval_steps == 0) or (step+1) == len(trainloader):
+
                 eval_loss = eval_mrasp(model, valloader, args, epoch_i)
+                
+                with open(log_file_path, "a") as logf:
+                    logf.write(
+                        json.dumps(
+                            {"step": step, "epoch": epoch_i+1, "eval_loss": eval_loss,
+                            "best_eval_loss": best_eval_loss, "train_loss": np.mean(train_losses)}
+                        )+"\n"
+                    )
                 print(f"eval_loss: {eval_loss}")
                 ckpt_dict = {
                     "step": step,
@@ -739,8 +782,8 @@ def train(args):
 # main
 if __name__ == "__main__":
     args = get_cmdline_args()
-    if args.mode == "train_mrasp":
-        train_mrasp(args)
+    if args.mode == "pretrain_mrasp":
+        pretrain_mrasp(args)
     elif args.mode == "predict_mrasp":
         predict_mrasp(args)
     else:
