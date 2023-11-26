@@ -24,6 +24,10 @@ TREE_SITTER_LANG_CODE_CORRECTIONS = {
     "cs": "c_sharp"
 }
 
+random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
+
 class CodeSearchNetTrainer(Trainer):
     def _maybe_log_save_evaluate(self, tr_loss, model, trial, epoch, ignore_keys_for_eval):
         if self.control.should_log:
@@ -198,6 +202,20 @@ def preprocess_function(examples):
 
     return model_inputs
 
+class PredictionDataset(Dataset):
+    def __init__(self, data: List[dict]):
+        self.data = []
+        # do tokenization.
+        for i in tqdm(range(len(data)), desc="tokenizing data"):
+            task_tag = data[i]['stratify']
+            self.data.append(task_tag+" "+data[i]['src_text'])
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
 class PretrainingDataset(Dataset):
     def __init__(self, data: List[dict], tokenizer, 
                  max_length=200, padding="max_length"):
@@ -260,12 +278,13 @@ def get_cmdline_args():
     parser = argparse.ArgumentParser(description="Fine-tuning CodeT5 for multilingual text and code tasks")
 
     # Add arguments
-    parser.add_argument("--mode", type=str, default="train", choices=["train", "eval", "train_mrasp"], help="training/evaluation mode")
+    parser.add_argument("--mode", type=str, default="train", help="training/evaluation mode",
+                        choices=["train", "eval", "train_mrasp", "predict_mrasp"])
     parser.add_argument("--tpath", type=str, default="/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl", 
                         help="code transformations data augmentation")
     parser.add_argument("--no_contrast", action="store_true", help="mRASP without contrastive loss")
     parser.add_argument("--mrasp_lambda", default=0.05, type=float, help="loss function weights")
-    # parser.add_argument("--checkpoint_path", type=str, default=None)
+    parser.add_argument("--checkpoint_path", type=str, default=None, help="path to checkpoint (model state dict & other stuff) to be loaded")
     parser.add_argument("--output_dir", type=str, required=True, help="Directory where the model checkpoints and predictions will be stored.")
     # parser.add_argument("--wandb", action="store_true", help="use WandB for logging")
     parser.add_argument("--model_name", type=str, default="Salesforce/codet5p-770m", help="Name of the pre-trained weights to load")
@@ -390,12 +409,138 @@ def eval_mrasp(model, valloader, args, epoch_i):
 
     return np.mean(losses)
 
+TRANS_LANG_MAP = {
+    "da": "danish",
+    "de": "german",
+    "fr": "french",
+    "ja": "jp",
+    "ru": "russian",
+    "spa": "spanish",
+    "es": "spanish",
+    "en": "en"
+}
+def predict_mrasp(args):
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    model = T5ForConditionalGeneration.from_pretrained(args.model_name) 
+    assert args.checkpoint_path is not None
+    ckpt_dict = torch.load(args.checkpoint_path, map_location="cpu")
+    model.load_state_dict(ckpt_dict['model_state_dict'])
+    
+    data = []
+    label_str = []
+    pred_str = []
+
+    bleu_metric = evaluate.load("bleu")
+    pipe = pipeline('translation', model=model, tokenizer=tokenizer, 
+                    device="cuda:0", batch_size=args.per_device_train_batch_size)
+    
+    accuracy = 0
+    code_bleu_score = 0
+    # do task-wise processing
+    lang = {"py": "python"}.get(args.tgt, args.tgt)
+    if args.task == "neulab/conala":
+        data_ = load_dataset(args.task, "curated")       
+        if args.src == "en": # code generation
+            src_key = "intent"
+            tgt_key = "snippet"
+            task = "codegen"
+        elif args.tgt == "en": # code summarization
+            src_key = "snippet"
+            tgt_key = "intent"
+            task = "codesum"
+        for inst in data_["test"]:
+            data.append({
+                "task": task,
+                "src_lang": args.src,
+                "tgt_lang": args.tgt,
+                "stratify": f"{args.src}-{args.tgt}",
+                "src_text": inst[src_key],
+                "tgt_text": inst[tgt_key]
+            })
+            # print(inst[tgt_key]) # NOTE: DEBUG
+            label_str.append(inst[tgt_key])
+    if args.task == "neulab/mconala":
+        subset = args.tgt if args.src == "py" else args.src
+        data_ = load_dataset(args.task, subset)       
+        if args.tgt == "py": # code generation
+            src_key = "intent"
+            tgt_key = "snippet"
+            task = "codegen"
+        elif args.src == "py": # code summarization
+            src_key = "snippet"
+            tgt_key = "intent"
+            task = "codesum"
+        for inst in data_["test"]:
+            data.append({
+                "task": task,
+                "src_lang": args.src,
+                "tgt_lang": args.tgt,
+                "stratify": f"{args.src}-{args.tgt}",
+                "src_text": inst[src_key],
+                "tgt_text": inst[tgt_key]
+            })
+            # print(inst[tgt_key]) # NOTE: DEBUG
+            label_str.append(inst[tgt_key])
+    elif args.task == "code_x_glue_tt_text_to_text":
+        if args.tgt == "en":
+            src_key = "source"
+            tgt_key = "target"
+            subset =  f"{args.src}_{args.tgt}"
+        else:
+            src_key = "target"
+            tgt_key = "source"
+            subset =  f"{args.tgt}_{args.src}"
+        data_ = load_dataset(args.task, subset)
+        for inst in data_["test"]:
+            data.append({
+                "task": "doctrans",
+                "src_lang": TRANS_LANG_MAP[args.src],
+                "tgt_lang": TRANS_LANG_MAP[args.tgt],
+                "stratify": f"{TRANS_LANG_MAP[args.src]}-{TRANS_LANG_MAP[args.tgt]}",
+                "src_text": inst[src_key],
+                "tgt_text": inst[tgt_key]
+            })
+            label_str.append(inst[tgt_key])
+    dataset = PredictionDataset(data)
+    for rec in tqdm(pipe(dataset, max_length=300)):
+        pred_str.append(rec[0]["translation_text"])
+    
+    # Compute metrics:
+    bleu_score = bleu_metric.compute(predictions=pred_str, references=label_str)
+    if args.task == "neulab/conala":
+        if args.src == "en":
+            accuracy = exact_match_accuracy(preds=pred_str, refs=label_str)
+            code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
+    elif args.task == "neulab/mconala":
+        if args.tgt == "py":
+            accuracy = exact_match_accuracy(preds=pred_str, refs=label_str)
+            code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
+    # elif args.task == "code_x_glue_tt_text_to_text":
+    #     pass
+
+    # save predictions to out_file.
+    os.makedirs(args.output_dir, exist_ok=True)
+    out_file = args.out_file if args.out_file is not None else "test_outputs.json"
+    model_output_path = os.path.join(args.output_dir, out_file)
+    print(f"\x1b[34;1mBLEU score:\x1b[0m {100*bleu_score['bleu']:.2f}")
+    print(f"\x1b[34;1maccuracy:\x1b[0m {100*accuracy:.2f}")
+    print(f"\x1b[34;1mCodeBLEU score:\x1b[0m {100*code_bleu_score:.2f}")
+    with open(model_output_path, "w") as f:
+        json.dump({
+            "accuracy": accuracy,
+            "bleu": bleu_score,
+            "codebleu": code_bleu_score,
+            "preds": pred_str,
+            "references": label_str,
+        }, f, indent=4)
+
 def train_mrasp(args):
     # load CoNaLa-mined dataset (top-100k) for pre-training.
     from src.datautils import read_jsonl
     conala_mined_dataset = load_dataset("neulab/conala", "mined", split="train[:100000]")
     conala_code_transforms = read_jsonl(args.tpath)
     codegen_data = []
+    os.makedirs(args.output_dir, exist_ok=True)
     for i in tqdm(range(len(conala_mined_dataset))):
         inst = conala_mined_dataset[i]
         codegen_data.append({
@@ -406,16 +551,16 @@ def train_mrasp(args):
             "src_text": inst["intent"],
             "tgt_text": inst["snippet"]
         })
-        assert inst['snippet'] == conala_code_transforms[i]['snippet']
-        for transformed_pl in conala_code_transforms[i]['transforms']:
-            codegen_data.append({
-                "task": "codegen",
-                "src_lang": "en",
-                "tgt_lang": "py",
-                "stratify": "en-py",
-                "src_text": inst["intent"],
-                "tgt_text": transformed_pl[1]
-            })
+        # assert inst['snippet'] == conala_code_transforms[i]['snippet']
+        # for transformed_pl in conala_code_transforms[i]['transforms']:
+        #     codegen_data.append({
+        #         "task": "codegen",
+        #         "src_lang": "en",
+        #         "tgt_lang": "py",
+        #         "stratify": "en-py",
+        #         "src_text": inst["intent"],
+        #         "tgt_text": transformed_pl[1]
+        #     })
     mcodegen_data = []
     doctrans_data = []
     for path, src_lang in TRANS_NL_DATA.items():
@@ -596,6 +741,8 @@ if __name__ == "__main__":
     args = get_cmdline_args()
     if args.mode == "train_mrasp":
         train_mrasp(args)
+    elif args.mode == "predict_mrasp":
+        predict_mrasp(args)
     else:
         bleu_metric = evaluate.load("bleu")
         tokenizer = AutoTokenizer.from_pretrained(args.model_name)
