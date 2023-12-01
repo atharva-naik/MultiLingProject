@@ -229,15 +229,16 @@ class PretrainingDataset(Dataset):
             if eval:
                 task_tag = data[i]['stratify']
                 model_inputs = tokenizer(task_tag+" "+data[i]['src_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
-                rev_task_tag = data[i]['tgt_lang']+"-"+data[i]['src_lang']
                 labels = tokenizer(data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
                 for key in model_inputs:
                     model_inputs[key] = model_inputs[key][0]
                 model_inputs["labels"] = labels['input_ids'][0]
-                # print(rev_task_tag, data[i]['tgt_text'])
-                contrast = tokenizer(rev_task_tag+" "+data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
-                for key in contrast:
-                    model_inputs[f"label_{key}"] = contrast[key][0]
+                if data[i]['src_trans'] is None:
+                    data[i]['src_trans'] = data[i]['src_text']
+                    model_inputs["contrast_mask"] = torch.as_tensor(0)
+                else: model_inputs["contrast_mask"] = torch.as_tensor(1)
+                contrast = tokenizer(task_tag+" "+data[i]['src_trans'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                for key in contrast: model_inputs[f"contrast_{key}"] = contrast[key][0]
             else: model_inputs = data[i]
             self.data.append(model_inputs)
 
@@ -254,8 +255,12 @@ class PretrainingDataset(Dataset):
             for key in model_inputs:
                 model_inputs[key] = model_inputs[key][0]
             model_inputs["labels"] = labels['input_ids'][0]
-            # print(rev_task_tag, data[i]['tgt_text'])
-            contrast = tokenizer(rev_task_tag+" "+self.data[index]['tgt_text'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            if self.data[index]['src_trans'] is None:
+                self.data[index]['src_trans'] = self.data[index]['src_text']
+                model_inputs["contrast_mask"] = torch.as_tensor(0)
+            else: model_inputs["contrast_mask"] = torch.as_tensor(1)
+            contrast = tokenizer(task_tag+" "+self.data[index]['src_trans'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            for key in contrast: model_inputs[f"contrast_{key}"] = contrast[key][0]
         else: model_inputs = self.data[index]
         return model_inputs
 
@@ -295,15 +300,18 @@ def get_cmdline_args():
     parser = argparse.ArgumentParser(description="Fine-tuning CodeT5 for multilingual text and code tasks")
 
     # Add arguments
+    parser.add_argument("--skip_step", type=int, default=0, help="skip to this step")
     parser.add_argument("--mode", type=str, default="train", help="training/evaluation mode",
                         choices=["train", "eval", "pretrain_mrasp", "predict_mrasp"])
     parser.add_argument("--tpath", type=str, default="/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl", 
                         help="code transformations data augmentation")
+    parser.add_argument("--use_codesearchnet_data", action="store_true", help="use CodeSearchNet data")
     parser.add_argument("--no_contrast", action="store_true", help="mRASP without contrastive loss")
     parser.add_argument("--mrasp_lambda", default=0.05, type=float, help="loss function weights")
     parser.add_argument("--checkpoint_path", type=str, default=None, help="path to checkpoint (model state dict & other stuff) to be loaded")
     parser.add_argument("--output_dir", type=str, required=True, help="Directory where the model checkpoints and predictions will be stored.")
     # parser.add_argument("--wandb", action="store_true", help="use WandB for logging")
+    parser.add_argument("--conala_topk", type=int, default=50000, help="top-k instances to be picked from CoNaLa")
     parser.add_argument("--model_name", type=str, default="Salesforce/codet5p-770m", help="Name of the pre-trained weights to load")
     parser.add_argument("--group_by_length", type=bool, default=True, help="Whether to group batches of similar lengths together.")
     parser.add_argument("--per_device_train_batch_size", type=int, default=16, help="Batch size per GPU/TPU core for training.")
@@ -323,6 +331,7 @@ def get_cmdline_args():
     parser.add_argument("--tgt", type=str, default="cs", help="target language")
     parser.add_argument("--eval_accumulation_steps", default=None, type=int, help="to prevent GPU OOM errors for CodeSearchNet")
     parser.add_argument("--out_file", default=None, help="overwrite default file name of `test_output.json` with passed name.")
+    parser.add_argument("--continue_train", action="store_true", help="continue pre-training from a checkpoint")
 
     # Parse arguments
     args = parser.parse_args()
@@ -396,7 +405,7 @@ def eval(args):
             "preds": pred_str,
             "references": label_str,
         }, f, indent=4)
-BASE_DIR = "/data/tir/projects/tir4/users/ymathur/mnlp/MultiLingProject/src/translator/res"
+BASE_DIR = "/data/tir/projects/tir4/users/ymathur/mnlp/MultiLingProject/src/translator/ras_res"
 CONALA_TRANS_NL_DATA = {
     "conala_with_dan_Latn.jsonl": "danish",
     "conala_with_deu_Latn.jsonl": "german",
@@ -416,7 +425,11 @@ CODESEARCHNET_TRANS_NL_DATA = {
     "code_search_net_with_fra_Latn.jsonl": "french",
     "code_search_net_with_jpn_Jpan.jsonl": "jp",
     "code_search_net_with_rus_Cyrl.jsonl": "russian",
-    "code_search_net_with_spa_Latn.jsonl": "spanish"
+    "code_search_net_with_spa_Latn.jsonl": "spanish",
+    "code_search_net_with_nob_Latn.jsonl": "norwegian",
+    "code_search_net_with_lij_Latn.jsonl": "latvian",
+    "code_search_net_with_zho_Hans.jsonl": "chinese",
+    "code_search_net_with_arb_Latn.jsonl": "arabic"
 }
 CODESEARCHNET_TRANS_NL_DATA = {os.path.join(BASE_DIR, k): v for k,v in CODESEARCHNET_TRANS_NL_DATA.items()}
 def split_data(data, val_size: float=0.005):
@@ -432,7 +445,7 @@ def eval_mrasp(model, valloader, args, epoch_i):
     losses = []
     for step, batch in val_bar:
         with torch.no_grad(): 
-            batch = {k: v.cuda() for k,v in batch.items() if not k.startswith("label_")}
+            batch = {k: v.cuda() for k,v in batch.items() if not k.startswith("contrast_")}
             outputs = model(**batch)
             loss = outputs.loss
             losses.append(loss.item())
@@ -448,12 +461,16 @@ TRANS_LANG_MAP = {
     "ru": "russian",
     "spa": "spanish",
     "es": "spanish",
-    "en": "en"
+    "en": "en",
+    "zh": "chinese",
+    "no": "norwegian",
+    "lv": "latvian",
 }
 def predict_mrasp(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     model = T5ForConditionalGeneration.from_pretrained(args.model_name) 
     assert args.checkpoint_path is not None
+    print(f"loaded checkpoint from: {args.checkpoint_path}")
     ckpt_dict = torch.load(args.checkpoint_path, map_location="cpu")
     model.load_state_dict(ckpt_dict['model_state_dict'])
     
@@ -512,6 +529,28 @@ def predict_mrasp(args):
             })
             # print(inst[tgt_key]) # NOTE: DEBUG
             label_str.append(inst[tgt_key])
+    if args.task == "neulab/odex":
+        subset = args.tgt if args.src == "py" else args.src
+        data_ = load_dataset(args.task, subset)       
+        if args.tgt == "py": # code generation
+            src_key = "intent"
+            tgt_key = "canonical_solution"
+            task = "codegen"
+        elif args.src == "py": # code summarization
+            src_key = "canonical_solution"
+            tgt_key = "intent"
+            task = "codesum"
+        for inst in data_["test"]:
+            data.append({
+                "task": task,
+                "src_lang": args.src,
+                "tgt_lang": args.tgt,
+                "stratify": f"{args.src}-{args.tgt}",
+                "src_text": inst[src_key],
+                "tgt_text": inst[tgt_key]
+            })
+            # print(inst[tgt_key]) # NOTE: DEBUG
+            label_str.append(inst[tgt_key])
     elif args.task == "code_x_glue_tt_text_to_text":
         if args.tgt == "en":
             src_key = "source"
@@ -546,6 +585,10 @@ def predict_mrasp(args):
         if args.tgt == "py":
             accuracy = exact_match_accuracy(preds=pred_str, refs=label_str)
             code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
+    elif args.task == "neulab/odex":
+        if args.tgt == "py":
+            accuracy = exact_match_accuracy(preds=pred_str, refs=label_str)
+            code_bleu_score = codebleu_fromstr(refs=label_str, hyp=pred_str, lang=lang)
     # elif args.task == "code_x_glue_tt_text_to_text":
     #     pass
 
@@ -568,22 +611,28 @@ def predict_mrasp(args):
 def pretrain_mrasp(args):
     # load CoNaLa-mined dataset (top-100k) for pre-training.
     from src.datautils import read_jsonl
-    conala_mined_dataset = load_dataset("neulab/conala", "mined", split="train[:100000]")
+    filt_k_conala = args.conala_topk
+    conala_mined_dataset = load_dataset("neulab/conala", "mined", 
+                                        split=f"train[:{filt_k_conala}]")
     conala_code_transforms = read_jsonl(args.tpath)
     codegen_data = []
     os.makedirs(args.output_dir, exist_ok=True)
     for i in tqdm(range(len(conala_mined_dataset))):
         inst = conala_mined_dataset[i]
+        transformed_pl = None
+        assert inst['snippet'] == conala_code_transforms[i]['snippet']
+        if len(conala_code_transforms[i]['transforms']) > 0:
+            transformed_pl = random.sample(conala_code_transforms[i]['transforms'], k=1)[0][1]
         codegen_data.append({
             "task": "codegen",
             "src_lang": "en",
             "tgt_lang": "py",
             "stratify": "en-py",
             "src_text": inst["intent"],
-            "tgt_text": inst["snippet"]
-        })
-        # assert inst['snippet'] == conala_code_transforms[i]['snippet']
-        # for transformed_pl in conala_code_transforms[i]['transforms']:
+            "tgt_text": inst["snippet"],
+            "tgt_trans": transformed_pl,
+            "src_trans": None,
+        })        
         #     codegen_data.append({
         #         "task": "codegen",
         #         "src_lang": "en",
@@ -605,7 +654,9 @@ def pretrain_mrasp(args):
                 "tgt_lang": "py",
                 "stratify": f"{src_lang}-py",
                 "src_text": nl_to_trans_nl[inst["src_text"]],
-                "tgt_text": inst["tgt_text"]
+                "tgt_text": inst["tgt_text"],
+                "src_trans": None,
+                "tgt_trans": inst['tgt_trans'],
             })
         for i in range(len(trans_data)):
             doctrans_data.append({
@@ -614,7 +665,9 @@ def pretrain_mrasp(args):
                 "tgt_lang": src_lang,
                 "stratify": f"en-{src_lang}",
                 "src_text": trans_data[i]["intent"],
-                "tgt_text": trans_data[i][f"{src_lang}_translation"]
+                "tgt_text": trans_data[i][f"{src_lang}_translation"],
+                "src_trans": trans_data[i]['ras_intent'],
+                "tgt_trans": None,
             })
             doctrans_data.append({
                 "task": "doctrans",
@@ -622,7 +675,9 @@ def pretrain_mrasp(args):
                 "tgt_lang": "en",
                 "stratify": f"{src_lang}-en",
                 "src_text": trans_data[i][f"{src_lang}_translation"],
-                "tgt_text": trans_data[i]["intent"]
+                "tgt_text": trans_data[i]["intent"],
+                "tgt_trans": trans_data[i]['ras_intent'],
+                "src_trans": None,
             })
     codegen_data = codegen_data+mcodegen_data
     codesum_data = []
@@ -633,8 +688,82 @@ def pretrain_mrasp(args):
             "tgt_lang": codegen_data[i]['src_lang'],
             'stratify': f'py-{codegen_data[i]["src_lang"]}',
             "src_text": inst["tgt_text"],
-            "tgt_text": inst["src_text"]
+            "tgt_text": inst["src_text"],
+            "src_trans": inst["tgt_trans"],
+            "tgt_trans": inst["src_trans"],
         })
+    if args.use_codesearchnet_data:
+        additional_codegen_data = []
+        additional_codesum_data = []
+        additional_doctrans_data = []
+        for path, lang in CODESEARCHNET_TRANS_NL_DATA.items():
+            lang_key = lang if lang != "jp" else "japanese" 
+            data_ = read_jsonl(path)
+            for rec in data_:
+                codelang = rec['language'] # rec['language'] if rec['language'] != "python" else "py"
+                additional_codegen_data.append({
+                    "task": "codegen",
+                    "src_lang": "en",
+                    "tgt_lang": codelang,
+                    "stratify": f"en-{codelang}",
+                    "src_text": rec['func_documentation_string'],
+                    "tgt_text": rec["func_code_string"],
+                    "src_trans": None,
+                    "tgt_trans": None,
+                })
+                additional_codegen_data.append({
+                    "task": "codegen",
+                    "src_lang": lang,
+                    "tgt_lang": codelang,
+                    "stratify": f"{lang}-{codelang}",
+                    "src_text": rec[f'{lang_key}_translation'],
+                    "tgt_text": rec["func_code_string"],
+                    "src_trans": None,
+                    "tgt_trans": None,
+                })
+                additional_codesum_data.append({
+                    "task": "codesum",
+                    "tgt_lang": "en",
+                    "src_lang": codelang,
+                    "stratify": f"{codelang}-en",
+                    "tgt_text": rec['func_documentation_string'],
+                    "src_text": rec["func_code_string"],
+                    "src_trans": None,
+                    "tgt_trans": None,
+                })
+                additional_codesum_data.append({
+                    "task": "codesum",
+                    "tgt_lang": lang,
+                    "src_lang": codelang,
+                    "stratify": f"{codelang}-{lang}",
+                    "tgt_text": rec[f'{lang_key}_translation'],
+                    "src_text": rec["func_code_string"],
+                    "src_trans": None,
+                    "tgt_trans": None,
+                })
+                additional_doctrans_data.append({
+                    "task": "doctrans",
+                    "src_lang": "en",
+                    "tgt_lang": lang,
+                    "stratify": f"en-{lang}",
+                    "src_text": rec["func_documentation_string"],
+                    "tgt_text": rec[f"{lang_key}_translation"],
+                    "src_trans": rec["ras_intent"],
+                    "tgt_trans": None,
+                })
+                additional_doctrans_data.append({
+                    "task": "doctrans",
+                    "tgt_lang": "en",
+                    "src_lang": lang,
+                    "stratify": f"{lang}-en",
+                    "tgt_text": rec["func_documentation_string"],
+                    "src_text": rec[f"{lang_key}_translation"],
+                    "src_trans": None,
+                    "tgt_trans": rec["ras_intent"],
+                })
+        codegen_data += additional_codegen_data
+        codesum_data += additional_codesum_data
+        doctrans_data += additional_doctrans_data
     print(f"{len(codegen_data)} CodeGen instances")
     print(f"{len(codesum_data)} CodeSum instances")
     print(f"{len(doctrans_data)} DocTrans instances")
@@ -665,13 +794,18 @@ def pretrain_mrasp(args):
     
     # create scheduler and optimizer.
     model = T5ForConditionalGeneration.from_pretrained(args.model_name) 
+    model.cuda()
     num_train_steps = args.num_train_epochs*len(trainloader)
     optimizer = AdamW(model.parameters(), lr=args.learning_rate, eps=1e-12)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=1000, num_training_steps=num_train_steps)
+    if args.continue_train:
+        print(f"continuing training from {args.skip_step} with checkpoint: {args.checkpoint_path}")
+        ckpt_dict = torch.load(args.checkpoint_path, map_location="cuda:0")
+        model.load_state_dict(ckpt_dict['model_state_dict'])
+        optimizer.load_state_dict(ckpt_dict['optim_state_dict'])
 
-    info_nce_loss = InfoNCE(temperature=0.001)
+    info_nce_loss = InfoNCE(temperature=0.001, reduction='none')
     best_eval_loss = 100000
-    model.cuda()
     log_file_path = os.path.join(args.output_dir, "output.jsonl")
     for epoch_i in range(args.num_train_epochs):
         train_bar = tqdm(enumerate(trainloader), 
@@ -680,19 +814,22 @@ def pretrain_mrasp(args):
         with open(log_file_path, "a") as logf:
             logf.write(json.dumps({"epoch_i": epoch_i+1, "msg": "starting epoch"})+"\n")
         for step, batch in train_bar:
-            # print(batch)
-            for key in batch:
-                batch[key] = batch[key].cuda()
+            if args.continue_train and epoch_i == 0 and step < args.skip_step: # epoch is hard coded, but ideally a skip_epoch should also be passed.
+                if step % args.gradient_accumulation_steps: 
+                    scheduler.step()
+                continue
+            for key in batch: batch[key] = batch[key].cuda()
             model.train()
             optimizer.zero_grad()
-            seq2seq_batch = {k: v for k,v in batch.items() if not k.startswith("label_")}
+            seq2seq_batch = {k: v for k,v in batch.items() if not k.startswith("contrast_")}
             
             if not args.no_contrast:
-                contrast_batch = {k.replace("label_", ""): v for k,v in batch.items() if k.startswith("label_")}
+                contrast_batch = {k.replace("contrast_", ""): v for k,v in batch.items() if (k.startswith("contrast_") and k != "contrast_mask")}
+                contrast_mask = batch['contrast_mask']
                 seq2seq_outputs = model(**seq2seq_batch)
                 e1 = seq2seq_outputs.encoder_last_hidden_state.mean(axis=1)
                 e2 = model.encoder(**contrast_batch).last_hidden_state.mean(axis=1)
-                loss = seq2seq_outputs.loss+args.mrasp_lambda*info_nce_loss(e1, e2)
+                loss = seq2seq_outputs.loss+args.mrasp_lambda*(contrast_mask*info_nce_loss(e1, e2)).mean()
             else: 
                 seq2seq_outputs = model(**seq2seq_batch)
                 loss = seq2seq_outputs.loss
