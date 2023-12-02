@@ -202,6 +202,18 @@ def preprocess_function(examples):
 
     return model_inputs
 
+def mrasp_preprocess_function(examples):
+    padding = "max_length"
+    max_length = 200
+    task_tag = TRANS_LANG_MAP.get(args.src, args.src) + "-" + TRANS_LANG_MAP.get(args.tgt, args.tgt)
+    inputs = [task_tag + " " + ex for ex in examples[input_key]]
+    targets = [ex for ex in examples[target_key]]
+    model_inputs = tokenizer(inputs, max_length=max_length, padding=padding, truncation=True)
+    labels = tokenizer(targets, max_length=max_length, padding=padding, truncation=True)
+    model_inputs["labels"] = labels["input_ids"]
+
+    return model_inputs
+
 class PredictionDataset(Dataset):
     def __init__(self, data: List[dict]):
         self.data = []
@@ -302,12 +314,13 @@ def get_cmdline_args():
     # Add arguments
     parser.add_argument("--skip_step", type=int, default=0, help="skip to this step")
     parser.add_argument("--mode", type=str, default="train", help="training/evaluation mode",
-                        choices=["train", "eval", "pretrain_mrasp", "predict_mrasp"])
+                        choices=["train", "eval", "pretrain_mrasp", "finetune_mrasp", "predict_mrasp"])
     parser.add_argument("--tpath", type=str, default="/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl", 
                         help="code transformations data augmentation")
     parser.add_argument("--use_codesearchnet_data", action="store_true", help="use CodeSearchNet data")
     parser.add_argument("--no_contrast", action="store_true", help="mRASP without contrastive loss")
     parser.add_argument("--mrasp_lambda", default=0.05, type=float, help="loss function weights")
+    parser.add_argument("--use_finetuned_checkpoint", action="store_true", help="load a fine-tuned checkpoint")
     parser.add_argument("--checkpoint_path", type=str, default=None, help="path to checkpoint (model state dict & other stuff) to be loaded")
     parser.add_argument("--output_dir", type=str, required=True, help="Directory where the model checkpoints and predictions will be stored.")
     # parser.add_argument("--wandb", action="store_true", help="use WandB for logging")
@@ -469,10 +482,11 @@ TRANS_LANG_MAP = {
 def predict_mrasp(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     model = T5ForConditionalGeneration.from_pretrained(args.model_name) 
-    assert args.checkpoint_path is not None
-    print(f"loaded checkpoint from: {args.checkpoint_path}")
-    ckpt_dict = torch.load(args.checkpoint_path, map_location="cpu")
-    model.load_state_dict(ckpt_dict['model_state_dict'])
+    assert args.checkpoint_path is not None or args.use_finetuned_checkpoint
+    if args.checkpoint_path:
+        print(f"loaded checkpoint from: {args.checkpoint_path}")
+        ckpt_dict = torch.load(args.checkpoint_path, map_location="cpu")
+        model.load_state_dict(ckpt_dict['model_state_dict'])
     
     data = []
     label_str = []
@@ -927,6 +941,11 @@ if __name__ == "__main__":
         bleu_metric = evaluate.load("bleu")
         tokenizer = AutoTokenizer.from_pretrained(args.model_name)
         model = T5ForConditionalGeneration.from_pretrained(args.model_name)
+        if args.checkpoint_path is not None and args.mode == "finetune_mrasp":
+            print(f"\x1b[32;1mfinetuning mrasp checkpoint: {args.checkpoint_path}\x1b[0m")
+            ckpt_dict = torch.load(args.checkpoint_path, map_location=model.device)
+            model.load_state_dict(ckpt_dict['model_state_dict'])
+
         args.trainer_class = Trainer
         if args.task == "code_x_glue_cc_code_to_code_trans":
             input_key = args.src
@@ -989,18 +1008,19 @@ if __name__ == "__main__":
         # 2. Salesforce/codet5p-2b (extra large)
         # 3. Salesforce/codet5p-770m (large)
         # 4. Salesforce/codet5-large
-        if args.mode == "train": 
+        preproc_func = mrasp_preprocess_function if args.mode == "finetune_mrasp" else preprocess_function
+        if args.mode == "train" or args.mode == 'finetune_mrasp': 
             if args.task == "code_x_glue_ct_code_to_text":
-                dataset["test"] = dataset["test"].map(preprocess_function, batched=True, desc="Running tokenizer")
-                dataset["train"] = dataset["train"].map(preprocess_function, batched=True, desc="Running tokenizer")
-                dataset["validation"]["val1"] = dataset["validation"]["val1"].map(preprocess_function, batched=True, desc="Running tokenizer")
-                dataset["validation"]["val2"] = dataset["validation"]["val2"].map(preprocess_function, batched=True, desc="Running tokenizer")
-                dataset["validation"]["val3"] = dataset["validation"]["val3"].map(preprocess_function, batched=True, desc="Running tokenizer")
-                dataset["validation"]["val4"] = dataset["validation"]["val4"].map(preprocess_function, batched=True, desc="Running tokenizer")
+                dataset["test"] = dataset["test"].map(preproc_func, batched=True, desc="Running tokenizer")
+                dataset["train"] = dataset["train"].map(preproc_func, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val1"] = dataset["validation"]["val1"].map(preproc_func, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val2"] = dataset["validation"]["val2"].map(preproc_func, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val3"] = dataset["validation"]["val3"].map(preproc_func, batched=True, desc="Running tokenizer")
+                dataset["validation"]["val4"] = dataset["validation"]["val4"].map(preproc_func, batched=True, desc="Running tokenizer")
             elif isinstance(dataset, dict):
                 for split in dataset:
-                    dataset[split] = dataset[split].map(preprocess_function, batched=True, desc="Running tokenizer")
-            else: dataset = dataset.map(preprocess_function, batched=True, desc="Running tokenizer")
+                    dataset[split] = dataset[split].map(preproc_func, batched=True, desc="Running tokenizer")
+            else: dataset = dataset.map(preproc_func, batched=True, desc="Running tokenizer")
             train(args)
         elif args.mode == "eval": 
             test_dataset = SimpleDataset(data=[rec[input_key] for rec in dataset["test"]])
