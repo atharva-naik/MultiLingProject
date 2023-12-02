@@ -13,25 +13,21 @@ import torch
 from accelerate import Accelerator
 from accelerate.logging import get_logger
 from accelerate.utils import set_seed
-from datasets import load_dataset
-from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 import transformers
 from transformers import (
     AutoConfig,
     AutoTokenizer,
-    DataCollatorForSeq2Seq,
-    default_data_collator,
     get_scheduler,
 )
 from transformers.utils import check_min_version, send_example_telemetry
 from transformers.utils.versions import require_version
 
 # mt_mrap related imports
-from mt_mrap.modeling_mt_mrasp import MT_MRASP
-from mt_mrasp.generate_mt_mrasp_parse_args import mt_mrasp_parse_args
-from mt_mrasp.prepare_mt_dataset import get_mt_mrasp_loaders
+from .mt_mrasp.modeling_mt_mrasp import MT_MRASP
+from .mt_mrasp.args_mt_mrasp import mt_mrasp_parse_args
+from .mt_mrasp.prepare_mt_dataset import get_mt_mrasp_loaders
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 # check_min_version("4.27.0")
@@ -47,18 +43,10 @@ def main():
      # ------------------------------------- Helper Functions -------------------------------------
     
     def get_loader():
-        loaders = get_mt_mrasp_loaders(
-            args.data_path, 
-            args.dataset, 
-            args.erm_batch_size,
-            args.method,
-            unlabeled_data=args.unlabeled_data,
-            seed=args.seed,
-            unlabeled_data_size=args.unlabeled_data_size,
-        )
+        train_loaders, val_loaders = get_mt_mrasp_loaders(args)
         return [
-            loaders["nl_nl_tr"], loaders["pl_nl_tr"], loaders["nl_pl_tr"],            
-            loaders["nl_nl_va"], loaders["pl_nl_va"], loaders["nl_pl_va"],            
+            train_loaders["nl_nl"], train_loaders["pl_nl"], train_loaders["nl_pl"],            
+            val_loaders["nl_nl"], val_loaders["pl_nl"], val_loaders["nl_pl"],            
         ]
         
     # Check if next batch for mt exists. If not create new loader

@@ -1,15 +1,26 @@
 
-from ..models.codet5 import PretrainingDataset, CONALA_TRANS_NL_DATA, CODESEARCHNET_TRANS_NL_DATA
-
+import os
+import random
+from collections import defaultdict
+from datasets import load_dataset
+from tqdm import tqdm
+from torch.utils.data import DataLoader
+from transformers import AutoTokenizer
+from ..codet5 import (
+    PretrainingDataset, 
+    CONALA_TRANS_NL_DATA, 
+    CODESEARCHNET_TRANS_NL_DATA,
+    split_data
+)
 
 def get_mt_mrasp_loaders(args):
     from src.datautils import read_jsonl
-    filt_k_conala = args.conala_topk
-    conala_mined_dataset = load_dataset("neulab/conala", "mined", 
-                                        split=f"train[:{filt_k_conala}]")
-    conala_code_transforms = read_jsonl(args.tpath)
+    # filt_k_conala = args.conala_topk
+    filt_k_conala = 50000
+    # filt_k_conala = 100
+    conala_mined_dataset = load_dataset("neulab/conala", "mined", split=f"train[:{filt_k_conala}]")
+    conala_code_transforms = read_jsonl("/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl")
     codegen_data = []
-    os.makedirs(args.output_dir, exist_ok=True)
     for i in tqdm(range(len(conala_mined_dataset))):
         inst = conala_mined_dataset[i]
         transformed_pl = None
@@ -26,14 +37,7 @@ def get_mt_mrasp_loaders(args):
             "tgt_trans": transformed_pl,
             "src_trans": None,
         })        
-        #     codegen_data.append({
-        #         "task": "codegen",
-        #         "src_lang": "en",
-        #         "tgt_lang": "py",
-        #         "stratify": "en-py",
-        #         "src_text": inst["intent"],
-        #         "tgt_text": transformed_pl[1]
-        #     })
+      
     mcodegen_data = []
     doctrans_data = []
     for path, src_lang in CONALA_TRANS_NL_DATA.items():
@@ -85,6 +89,8 @@ def get_mt_mrasp_loaders(args):
             "src_trans": inst["tgt_trans"],
             "tgt_trans": inst["src_trans"],
         })
+        
+    args.use_codesearchnet_data = True
     if args.use_codesearchnet_data:
         additional_codegen_data = []
         additional_codesum_data = []
@@ -167,12 +173,14 @@ def get_mt_mrasp_loaders(args):
 
     tasks = ["nl_pl", "pl_nl", "nl_nl"]
     task_to_train_data = {"nl_pl": cg_train, "pl_nl": cs_train, "nl_nl": dt_train}
-    task_to_val_data = {"nl_pl  ": cg_val, "pl_nl": cs_val, "nl_nl": dt_val}
+    task_to_val_data = {"nl_pl": cg_val, "pl_nl": cs_val, "nl_nl": dt_val}
 
     task_to_train_dataloader = dict()
     task_to_val_dataloader = dict()
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
     for task in tasks:
+        train_data = task_to_train_data[task]
+        val_data = task_to_val_data[task]
         print(f"train data size: {len(train_data)}")
         print(f"val data size: {len(val_data)}")
         train_dist = defaultdict(lambda: 0)
@@ -181,10 +189,11 @@ def get_mt_mrasp_loaders(args):
         for rec in val_data: val_dist[rec['stratify']] += 1
         train_dist = dict(train_dist)
         val_dist = dict(val_dist)
+        print("\n")
         for subset in train_dist:
             print('train-'+subset+f": {round(100*train_dist[subset]/len(train_data), 2)}%")
             print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
-
+        print("\n")
         train_dataset = PretrainingDataset(train_data, tokenizer, eval=False)
         val_dataset = PretrainingDataset(val_data, tokenizer, eval=True)
         trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)

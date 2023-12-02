@@ -2,7 +2,7 @@ import argparse
 from transformers import SchedulerType
 
 # Parsing input arguments
-def parse_args():
+def mt_mrasp_parse_args():
     parser = argparse.ArgumentParser(description="Pre-training of MRASP2 in a multitask manner")
     # Data and model arguments
     parser.add_argument(
@@ -148,8 +148,8 @@ def parse_args():
     parser.add_argument(
         "--seed", 
         type=int, 
-        default=0, h
-        elp="A seed for reproducible training."
+        default=0,
+        help="A seed for reproducible training."
     )
     parser.add_argument(
         "--checkpointing_steps",
