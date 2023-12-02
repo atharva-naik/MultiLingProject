@@ -11,7 +11,6 @@ import evaluate
 import numpy as np
 import torch
 from accelerate import Accelerator
-from accelerate.logging import get_logger
 from accelerate.utils import set_seed
 from tqdm.auto import tqdm
 
@@ -32,7 +31,6 @@ from .mt_mrasp.prepare_mt_mrasp_dataset import get_mt_mrasp_loaders
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 # check_min_version("4.27.0")
 
-logger = get_logger(__name__)
 # require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/translation/requirements.txt")
 
 
@@ -87,7 +85,7 @@ def main():
         datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO,
     )
-    logger.info(accelerator.state, main_process_only=False)
+    print(accelerator.state, main_process_only=False)
     if accelerator.is_local_main_process:
         datasets.utils.logging.set_verbosity_warning()
         transformers.utils.logging.set_verbosity_info()
@@ -200,13 +198,13 @@ def main():
     # Train!
     total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
-    logger.info("***** Running training *****")
-    logger.info(f"  Num examples = {len(data_loaders['nl_nl_tr'].dataset)}")
-    logger.info(f"  Num Epochs = {args.num_train_epochs}")
-    logger.info(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
-    logger.info(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
-    logger.info(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
-    logger.info(f"  Total optimization steps = {args.max_train_steps}")
+    print("***** Running training *****")
+    print(f"  Num examples = {len(data_loaders['nl_nl_tr'].dataset)}")
+    print(f"  Num Epochs = {args.num_train_epochs}")
+    print(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
+    print(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
+    print(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
+    print(f"  Total optimization steps = {args.max_train_steps}")
     # Only show the progress bar once on each machine.
     progress_bar = tqdm(range(args.max_train_steps), disable=not accelerator.is_local_main_process)
     completed_steps = 0
@@ -220,31 +218,47 @@ def main():
         model.train()
         if args.with_tracking:
             nl_nl_loss = 0
-            nl_pl_loss = 0            
+            nl_nl_contrast_loss = 0
+            
+            nl_pl_loss = 0  
+            nl_pl_contrast_loss = 0
+
             pl_nl_loss = 0
+            pl_nl_contrast_loss = 0
+            
             total_loss = 0
         for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_tr"], data_loaders["nl_pl_tr"], data_loaders["pl_nl_tr"])):
             
             # nl_nl training
-            print(f"\n\nnl_nl_batch: {nl_nl_batch.keys()}\n\n")
+            print("\n\nnl_nl_batch:")
+            for key, val in nl_nl_batch.items():
+                print(key, val.shape)
+            print(f"\n{nl_nl_batch['contrast_mask']}\n")
             nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
             outputs = model(**nl_nl_batch)
             loss1 = outputs.loss
-            nl_nl_loss += loss1.detach().float()
+            nl_nl_loss += loss1['loss'].detach().float()
+            nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
             
             # nl_pl training
             nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
             outputs = model(**nl_pl_batch)
             loss2 = outputs.loss
-            nl_pl_loss += loss2.detach().float()
-            
+            nl_pl_loss += loss2['loss'].detach().float()
+            nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
+                        
             # pl_nl training
             pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
             outputs = model(**pl_nl_batch)
             loss3 = outputs.loss
-            pl_nl_loss += loss3.detach().float()
-            
-            total_loss += (loss1.detach().float() + loss2.detach().float() + loss3.detach().float())
+            pl_nl_loss += loss3['loss'].detach().float()
+            pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
+                        
+            loss= (
+                loss1['loss'].detach().float() + loss2['loss'].detach().float() + loss3['loss'].detach().float() +
+                loss1['contrast_loss'].detach().float() + loss2['contrast_loss'].detach().float() + loss3['contrast_loss'].detach().float()            
+            )/3
+            total_loss += loss
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
             
@@ -311,7 +325,7 @@ def main():
 
                 metric.add_batch(predictions=decoded_preds, references=decoded_labels)
         eval_metric = metric.compute()
-        logger.info({"bleu": eval_metric["score"]})
+        print({"bleu": eval_metric["score"]})
 
         if args.with_tracking:
             accelerator.log(

@@ -43,7 +43,7 @@ class MT_MRASP(T5PreTrainedModel):
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
 
         # Contrastive part
-        self.temperature = 1.0
+        self.temperature = 0.05
         
         # Initialize weights and apply final processing
         self.post_init()
@@ -57,8 +57,9 @@ class MT_MRASP(T5PreTrainedModel):
         self,
         input_ids: Optional[torch.LongTensor] = None,
         attention_mask: Optional[torch.FloatTensor] = None,
-        input_ids_2: Optional[torch.LongTensor] = None,
-        attention_mask_2: Optional[torch.FloatTensor] = None,
+        contrast_input_ids: Optional[torch.LongTensor] = None,
+        contrast_attention_mask: Optional[torch.FloatTensor] = None,
+        contrast_mask: Optional[torch.FloatTensor] = None,
         decoder_input_ids: Optional[torch.LongTensor] = None,
         decoder_attention_mask: Optional[torch.BoolTensor] = None,
         head_mask: Optional[torch.FloatTensor] = None,
@@ -167,8 +168,8 @@ class MT_MRASP(T5PreTrainedModel):
         # ---------------------------------------------------------- Contrastive Part ----------------------------------------------------------
         
         encoder_outputs_2 = self.encoder(
-            input_ids=input_ids_2,
-            attention_mask=attention_mask_2,
+            input_ids=contrast_input_ids,
+            attention_mask=contrast_attention_mask,
         )
         proj1 = torch.mean(hidden_states, dim=1)
         proj2 = torch.mean(encoder_outputs_2[0], dim=1)
@@ -203,7 +204,7 @@ class MT_MRASP(T5PreTrainedModel):
         logits = logits / self.temperature
                     
         self.loss_fct = torch.nn.CrossEntropyLoss().to(self.device)
-        nt_xnet_loss = self.loss_fct(logits, nt_xnet_labels) 
+        contrast_loss = self.loss_fct(logits, nt_xnet_labels) 
         
         # Return Loss and Logits
         if not return_dict:
@@ -211,7 +212,7 @@ class MT_MRASP(T5PreTrainedModel):
             return ((loss,) + output) if loss is not None else output
 
         return Seq2SeqLMOutput(
-            loss={'loss': loss, 'nt_xnet_loss': nt_xnet_loss},
+            loss={'loss': loss, 'contrast_loss': contrast_loss},
             logits=lm_logits,
             past_key_values=decoder_outputs.past_key_values,
             decoder_hidden_states=decoder_outputs.hidden_states,
@@ -272,8 +273,8 @@ class MT_MRASP(T5PreTrainedModel):
 #         outputs = model(
 #             input_ids=inputs.input_ids.to(device), 
 #             attention_mask=inputs.attention_mask.to(device), 
-#             input_ids_2=inputs_2.input_ids.to(device), 
-#             attention_mask_2=inputs_2.attention_mask.to(device), 
+#             contrast_input_ids=inputs_2.input_ids.to(device), 
+#             contrast_attention_mask=inputs_2.attention_mask.to(device), 
 #             labels=labels.input_ids.to(device)
 #         )
 #         loss = outputs.loss

@@ -3,15 +3,81 @@ import os
 import random
 from collections import defaultdict
 from datasets import load_dataset
+from typing import *
 from tqdm import tqdm
-from torch.utils.data import DataLoader
+import torch
+from torch.utils.data import (
+    Dataset,
+    DataLoader
+)
 from transformers import AutoTokenizer
 from ..codet5 import (
-    PretrainingDataset, 
     CONALA_TRANS_NL_DATA, 
     CODESEARCHNET_TRANS_NL_DATA,
     split_data
 )
+
+
+class MTMraspDataset(Dataset):
+    
+    def __init__(
+        self, 
+        data: List[dict],
+        tokenizer, 
+        eval: bool,
+        max_length=200, 
+        padding="max_length"
+    ):
+        self.data = []
+        self.eval = eval
+        self.max_length = max_length
+        self.padding = padding
+        self.tokenizer = tokenizer
+        
+        # do tokenization.
+        for i in tqdm(range(len(data)), desc="tokenizing data"):
+            if eval:
+                task_tag = data[i]['stratify']
+                model_inputs = tokenizer(task_tag+" "+data[i]['src_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                labels = tokenizer(data[i]['tgt_text'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                for key in model_inputs:
+                    model_inputs[key] = model_inputs[key][0]
+                model_inputs["labels"] = labels['input_ids'][0]
+                if data[i]['src_trans'] is None:
+                    data[i]['src_trans'] = data[i]['src_text']
+                    model_inputs["contrast_mask"] = torch.as_tensor(0)
+                else: model_inputs["contrast_mask"] = torch.as_tensor(1)
+                contrast = tokenizer(task_tag+" "+data[i]['src_trans'], max_length=max_length, padding=padding, truncation=True, return_tensors="pt")
+                for key in contrast: model_inputs[f"contrast_{key}"] = contrast[key][0]
+            else: model_inputs = data[i]
+            self.data.append(model_inputs)
+            self.data = self.data[:1000]
+
+
+    def __len__(self):
+        return len(self.data)
+
+
+    def __getitem__(self, index):
+        tokenizer = self.tokenizer
+        if not self.eval:
+            task_tag = self.data[index]['stratify']
+            model_inputs = tokenizer(task_tag+" "+self.data[index]['src_text'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            rev_task_tag = self.data[index]['tgt_lang']+"-"+self.data[index]['src_lang']
+            labels = tokenizer(self.data[index]['tgt_text'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            for key in model_inputs:
+                model_inputs[key] = model_inputs[key][0]
+            model_inputs["labels"] = labels['input_ids'][0]
+            if self.data[index]['src_trans'] is None:
+                self.data[index]['src_trans'] = self.data[index]['src_text']
+                model_inputs["contrast_mask"] = torch.as_tensor(0)
+            else: model_inputs["contrast_mask"] = torch.as_tensor(1)
+            contrast = tokenizer(task_tag+" "+self.data[index]['src_trans'], max_length=self.max_length, padding=self.padding, truncation=True, return_tensors="pt")
+            for key in contrast: model_inputs[f"contrast_{key}"] = contrast[key][0]
+        else: model_inputs = self.data[index]
+        return model_inputs
+
+
 
 def get_mt_mrasp_loaders(args):
     from src.datautils import read_jsonl
@@ -194,8 +260,8 @@ def get_mt_mrasp_loaders(args):
             print('train-'+subset+f": {round(100*train_dist[subset]/len(train_data), 2)}%")
             print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
         print("\n")
-        train_dataset = PretrainingDataset(train_data, tokenizer, eval=False)
-        val_dataset = PretrainingDataset(val_data, tokenizer, eval=True)
+        train_dataset = MTMraspDataset(train_data, tokenizer, eval=False)
+        val_dataset = MTMraspDataset(val_data, tokenizer, eval=True)
         trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
         valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
 
