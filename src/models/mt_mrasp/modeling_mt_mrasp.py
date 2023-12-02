@@ -15,6 +15,7 @@ from transformers.modeling_outputs import (
     BaseModelOutput
 )
 
+
 class MT_MRASP(T5PreTrainedModel):
     _keys_to_ignore_on_load_unexpected = [
         "decoder.block.0.layer.1.EncDecAttention.relative_attention_bias.weight",
@@ -223,61 +224,60 @@ class MT_MRASP(T5PreTrainedModel):
 
     
     
-from transformers import AutoTokenizer
-from utils import set_random_seed
+# from transformers import AutoTokenizer
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    # set_random_seed(0)
-    # Load Model
-    device = "cuda"
-    checkpoint = "Salesforce/codet5p-770m"
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-    model = MT_MRASP.from_pretrained(checkpoint)
-    model.cuda()
-    print("\n\nmodel loaded\n\n")
+#     # set_random_seed(0)
+#     # Load Model
+#     device = "cuda"
+#     checkpoint = "Salesforce/codet5p-770m"
+#     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+#     model = MT_MRASP.from_pretrained(checkpoint)
+#     model.cuda()
+#     print("\n\nmodel loaded\n\n")
 
 
-    # Data initialization
-    input_data = [
-        "def print_hello_world():<extra_id_0>",
-        "def calculate_sum(x, y):<extra_id_0>",
-        "def concat_string(a, b):<extra_id_0>",
-        "def calc_product(l, m):<extra_id_0>",
-    ]
-    parallel_data = [
-        "def print_hello_world():<extra_id_0>",
-        "def get_addition(x, y):<extra_id_0>",
-        "def join_string(a, b):<extra_id_0>",
-        "def get_multiplication(l, m):<extra_id_0>",
-    ]
-    label_data = [
-        "print('Hello World')",
-        "return x+y",
-        "return a+b'",
-        "return l*m",
-    ]
+#     # Data initialization
+#     input_data = [
+#         "def print_hello_world():<extra_id_0>",
+#         "def calculate_sum(x, y):<extra_id_0>",
+#         "def concat_string(a, b):<extra_id_0>",
+#         "def calc_product(l, m):<extra_id_0>",
+#     ]
+#     parallel_data = [
+#         "def print_hello_world():<extra_id_0>",
+#         "def get_addition(x, y):<extra_id_0>",
+#         "def join_string(a, b):<extra_id_0>",
+#         "def get_multiplication(l, m):<extra_id_0>",
+#     ]
+#     label_data = [
+#         "print('Hello World')",
+#         "return x+y",
+#         "return a+b'",
+#         "return l*m",
+#     ]
     
-    # Data preprocessing
-    inputs = tokenizer(input_data, max_length=32, padding='max_length', return_tensors="pt")
-    print("inputs shape: ", inputs.input_ids.shape)
+#     # Data preprocessing
+#     inputs = tokenizer(input_data, max_length=32, padding='max_length', return_tensors="pt")
+#     print("inputs shape: ", inputs.input_ids.shape)
     
-    inputs_2 = tokenizer(parallel_data, max_length=32, padding='max_length', return_tensors="pt")
-    print("inputs_2 shape: ", inputs_2.input_ids.shape)
+#     inputs_2 = tokenizer(parallel_data, max_length=32, padding='max_length', return_tensors="pt")
+#     print("inputs_2 shape: ", inputs_2.input_ids.shape)
     
-    labels = tokenizer(label_data, padding=True, truncation=True, return_tensors="pt")
-    print("labels shape: ", labels.input_ids.shape)
+#     labels = tokenizer(label_data, padding=True, truncation=True, return_tensors="pt")
+#     print("labels shape: ", labels.input_ids.shape)
 
-    with torch.no_grad():
-        outputs = model(
-            input_ids=inputs.input_ids.to(device), 
-            attention_mask=inputs.attention_mask.to(device), 
-            input_ids_2=inputs_2.input_ids.to(device), 
-            attention_mask_2=inputs_2.attention_mask.to(device), 
-            labels=labels.input_ids.to(device)
-        )
-        loss = outputs.loss
-        logits = outputs.logits
+#     with torch.no_grad():
+#         outputs = model(
+#             input_ids=inputs.input_ids.to(device), 
+#             attention_mask=inputs.attention_mask.to(device), 
+#             input_ids_2=inputs_2.input_ids.to(device), 
+#             attention_mask_2=inputs_2.attention_mask.to(device), 
+#             labels=labels.input_ids.to(device)
+#         )
+#         loss = outputs.loss
+#         logits = outputs.logits
 
-    print(f"\nloss:{loss}")
-    print(f"\nlogits: {logits.shape}")
+#     print(f"\nloss:{loss}")
+#     print(f"\nlogits: {logits.shape}")
