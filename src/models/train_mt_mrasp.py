@@ -116,37 +116,20 @@ def main():
         "nl_pl_va": loaders[5],
     }
     
+    max_loader_size = 0
     for data_type, data_loader in data_loaders.items():
         print(f"{data_type} size: {len(data_loader.dataset)}\t{data_type} dataloader size: {len(data_loader)}")
-
+        if "tr" in data_type and len(data_loader) > max_loader_size:
+            max_loader_size = len(data_loader)
+            
     # Load pretrained model and tokenizer
-    #
-    # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
-    # download model & vocab.
-    if args.config_name:
-        config = AutoConfig.from_pretrained(args.config_name)
-    elif args.model_name_or_path:
-        config = AutoConfig.from_pretrained(args.model_name_or_path)
-    
-    if args.tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
-    elif args.model_name_or_path:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
-    else:
-        raise ValueError(
-            "You are instantiating a new tokenizer from scratch. This is not supported by this script."
-            "You can do it from another script, save it, and load it from here, using --tokenizer_name."
-        )
-
-    if args.model_name_or_path:
-        model = MT_MRASP.from_pretrained(
-            args.model_name_or_path,
-            from_tf=bool(".ckpt" in args.model_name_or_path),
-            config=config,
-        )
-    else:
-        logger.info("Training new model from scratch")
-        model = MT_MRASP.from_config(config)
+    config = AutoConfig.from_pretrained(args.model_name_or_path)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
+    model = MT_MRASP.from_pretrained(
+        args.model_name_or_path,
+        from_tf=bool(".ckpt" in args.model_name_or_path),
+        config=config,
+    )
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
@@ -174,7 +157,7 @@ def main():
 
     # Scheduler and math around the number of training steps.
     overrode_max_train_steps = False
-    num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
+    num_update_steps_per_epoch = math.ceil(max_loader_size / args.gradient_accumulation_steps)
     if args.max_train_steps is None:
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
         overrode_max_train_steps = True
@@ -185,14 +168,14 @@ def main():
         num_warmup_steps=args.max_train_steps*args.warmup_ratio,
         num_training_steps=args.max_train_steps,
     )
-
+    
     # Prepare everything with our `accelerator`.
-    model, optimizer, train_dataloader, eval_dataloader, lr_scheduler = accelerator.prepare(
-        model, optimizer, train_dataloader, eval_dataloader, lr_scheduler
+    model, optimizer, lr_scheduler = accelerator.prepare(
+        model, optimizer, lr_scheduler
     )
-
+    
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
-    num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
+    # num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
     if overrode_max_train_steps:
         args.max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
     # Afterwards we recalculate our number of training epochs
@@ -212,13 +195,7 @@ def main():
             experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
             accelerator.init_trackers("translation_no_trainer", experiment_config)
 
-    metric = evaluate.load("sacrebleu")
-
-    def postprocess_text(preds, labels):
-        preds = [pred.strip() for pred in preds]
-        labels = [[label.strip()] for label in labels]
-
-        return preds, labels
+    metric = evaluate.load("bleu")
 
     # Train!
     total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
