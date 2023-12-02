@@ -27,7 +27,7 @@ from transformers.utils.versions import require_version
 # mt_mrap related imports
 from .mt_mrasp.modeling_mt_mrasp import MT_MRASP
 from .mt_mrasp.args_mt_mrasp import mt_mrasp_parse_args
-from .mt_mrasp.prepare_mt_dataset import get_mt_mrasp_loaders
+from .mt_mrasp.prepare_mt_mrasp_dataset import get_mt_mrasp_loaders
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 # check_min_version("4.27.0")
@@ -133,9 +133,9 @@ def main():
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
-    embedding_size = model.get_input_embeddings().weight.shape[0]
-    if len(tokenizer) > embedding_size:
-        model.resize_token_embeddings(len(tokenizer))
+    # embedding_size = model.get_input_embeddings().weight.shape[0]
+    # if len(tokenizer) > embedding_size:
+    # model.resize_token_embeddings(len(tokenizer))
 
     # DataLoaders creation:
     label_pad_token_id = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
@@ -201,7 +201,7 @@ def main():
     total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
     logger.info("***** Running training *****")
-    logger.info(f"  Num examples = {len(train_dataset)}")
+    logger.info(f"  Num examples = {len(data_loaders['nl_nl_tr'].dataset)}")
     logger.info(f"  Num Epochs = {args.num_train_epochs}")
     logger.info(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
     logger.info(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
@@ -211,30 +211,7 @@ def main():
     progress_bar = tqdm(range(args.max_train_steps), disable=not accelerator.is_local_main_process)
     completed_steps = 0
     starting_epoch = 0
-
-    # Potentially load in the weights and states from a previous save
-    if args.resume_from_checkpoint:
-        if args.resume_from_checkpoint is not None or args.resume_from_checkpoint != "":
-            accelerator.print(f"Resumed from checkpoint: {args.resume_from_checkpoint}")
-            accelerator.load_state(args.resume_from_checkpoint)
-            path = os.path.basename(args.resume_from_checkpoint)
-        else:
-            # Get the most recent checkpoint
-            dirs = [f.name for f in os.scandir(os.getcwd()) if f.is_dir()]
-            dirs.sort(key=os.path.getctime)
-            path = dirs[-1]  # Sorts folders by date modified, most recent checkpoint is the last
-        # Extract `epoch_{i}` or `step_{i}`
-        training_difference = os.path.splitext(path)[0]
-
-        if "epoch" in training_difference:
-            starting_epoch = int(training_difference.replace("epoch_", "")) + 1
-            resume_step = None
-        else:
-            # need to multiply `gradient_accumulation_steps` to reflect real steps
-            resume_step = int(training_difference.replace("step_", "")) * args.gradient_accumulation_steps
-            starting_epoch = resume_step // len(train_dataloader)
-            resume_step -= starting_epoch * len(train_dataloader)
-
+    
     # update the progress_bar if load from checkpoint
     progress_bar.update(starting_epoch * num_update_steps_per_epoch)
     completed_steps = starting_epoch * num_update_steps_per_epoch
@@ -242,23 +219,37 @@ def main():
     for epoch in range(starting_epoch, args.num_train_epochs):
         model.train()
         if args.with_tracking:
+            nl_nl_loss = 0
+            nl_pl_loss = 0            
+            pl_nl_loss = 0
             total_loss = 0
-        for step, batch in enumerate(train_dataloader):
-            # We need to skip steps until we reach the resumed step
-            if args.resume_from_checkpoint and epoch == starting_epoch:
-                if resume_step is not None and step < resume_step:
-                    if step % args.gradient_accumulation_steps == 0:
-                        progress_bar.update(1)
-                        completed_steps += 1
-                    continue
-            outputs = model(**batch)
-            loss = outputs.loss
-            # We keep track of the loss at each epoch
-            if args.with_tracking:
-                total_loss += loss.detach().float()
+        for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_tr"], data_loaders["nl_pl_tr"], data_loaders["pl_nl_tr"])):
+            
+            # nl_nl training
+            print(f"\n\nnl_nl_batch: {nl_nl_batch.keys()}\n\n")
+            nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
+            outputs = model(**nl_nl_batch)
+            loss1 = outputs.loss
+            nl_nl_loss += loss1.detach().float()
+            
+            # nl_pl training
+            nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
+            outputs = model(**nl_pl_batch)
+            loss2 = outputs.loss
+            nl_pl_loss += loss2.detach().float()
+            
+            # pl_nl training
+            pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
+            outputs = model(**pl_nl_batch)
+            loss3 = outputs.loss
+            pl_nl_loss += loss3.detach().float()
+            
+            total_loss += (loss1.detach().float() + loss2.detach().float() + loss3.detach().float())
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
-            if step % args.gradient_accumulation_steps == 0 or step == len(train_dataloader) - 1:
+            
+            if step % args.gradient_accumulation_steps == 0 or step == len(data_loaders["nl_nl_tr"]) - 1:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
@@ -282,7 +273,7 @@ def main():
             "num_beams": args.num_beams,
         }
         samples_seen = 0
-        for step, batch in enumerate(eval_dataloader):
+        for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
             with torch.no_grad():
                 generated_tokens = accelerator.unwrap_model(model).generate(
                     batch["input_ids"],
@@ -326,7 +317,10 @@ def main():
             accelerator.log(
                 {
                     "bleu": eval_metric["score"],
-                    "train_loss": total_loss.item() / len(train_dataloader),
+                    "nl_nl_tr_loss": nl_nl_loss.item() / len(data_loaders["nl_nl_tr"]),
+                    "nl_pl_tr_loss": nl_pl_loss.item() / len(data_loaders["nl_pl_tr"]),
+                    "pl_nl_tr_loss": pl_nl_loss.item() / len(data_loaders["pl_nl_tr"]),
+                    "train_loss": total_loss.item() / (len(data_loaders["nl_nl_tr"]) + len(data_loaders["nl_pl_tr"]) + len(data_loaders["pl_nl_tr"])),
                     "epoch": epoch,
                     "step": completed_steps,
                 },

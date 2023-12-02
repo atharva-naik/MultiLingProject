@@ -11,4 +11,8 @@
 
 source activate lora_env
 
-python3 -m src.models.train_mt_mrasp --model_name_or_path Salesforce/codet5p-770m --per_device_train_batch_size 16 --per_device_eval_batch_size 16
+python3 -m src.models.train_mt_mrasp \
+--model_name_or_path Salesforce/codet5p-770m \
+--per_device_train_batch_size 16 \
+--per_device_eval_batch_size 16 \
+--checkpointing_steps 5000 \
