@@ -31,6 +31,7 @@ from transformers.utils.versions import require_version
 # mt_mrap related imports
 from mt_mrap.modeling_mt_mrasp import MT_MRASP
 from mt_mrasp.generate_mt_mrasp_parse_args import mt_mrasp_parse_args
+from mt_mrasp.prepare_mt_dataset import get_mt_mrasp_loaders
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 # check_min_version("4.27.0")
@@ -39,10 +40,47 @@ logger = get_logger(__name__)
 # require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/translation/requirements.txt")
 
 
-
 def main():
     # Parse the arguments
     args = mt_mrasp_parse_args()
+    
+     # ------------------------------------- Helper Functions -------------------------------------
+    
+    def get_loader():
+        loaders = get_mt_mrasp_loaders(
+            args.data_path, 
+            args.dataset, 
+            args.erm_batch_size,
+            args.method,
+            unlabeled_data=args.unlabeled_data,
+            seed=args.seed,
+            unlabeled_data_size=args.unlabeled_data_size,
+        )
+        return [
+            loaders["nl_nl_tr"], loaders["pl_nl_tr"], loaders["nl_pl_tr"],            
+            loaders["nl_nl_va"], loaders["pl_nl_va"], loaders["nl_pl_va"],            
+        ]
+        
+    # Check if next batch for mt exists. If not create new loader
+    def try_get_mt_batch(loader_, loader_type):
+        try:
+            batch_data = next(loader_)
+            return batch_data, loader_
+        except:
+            print(f"\nReloading {loader_type} data\n")
+            del loader_
+            gc.collect()
+            nl_nl_loader, pl_nl_loader, nl_pl_loader, _, _ , _ = get_loader()
+            if loader_type == "nl_nl":
+                batch_data = next(nl_nl_loader)
+                return batch_data, nl_nl_loader
+            elif loader_type == "pl_nl":
+                batch_data = next(pl_nl_loader)
+                return batch_data, pl_nl_loader
+            elif loader_type == "nl_pl":
+                batch_data = next(nl_pl_loader)
+                return batch_data, nl_pl_loader
+    
 
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
@@ -79,28 +117,19 @@ def main():
             os.makedirs(args.output_dir, exist_ok=True)
     accelerator.wait_for_everyone()
 
-    # Get the datasets: you can either provide your own CSV/JSON/TXT training and evaluation files (see below)
-    # or just provide the name of one of the public datasets available on the hub at https://huggingface.co/datasets/
-    # (the dataset will be downloaded automatically from the datasets Hub).
-    #
-    # For CSV/JSON files, this script will use the column called 'text' or the first column if no column called
-    # 'text' is found. You can easily tweak this behavior (see below).
-    #
-    # In distributed training, the load_dataset function guarantee that only one local process can concurrently
-    # download the dataset.
-    if args.dataset_name is not None:
-        # Downloading and loading a dataset from the hub.
-        raw_datasets = load_dataset(args.dataset_name)
-    else:
-        data_files = {}
-        if args.train_file is not None:
-            data_files["train"] = args.train_file
-        if args.validation_file is not None:
-            data_files["validation"] = args.validation_file
-        extension = args.train_file.split(".")[-1]
-        raw_datasets = load_dataset(extension, data_files=data_files)
-    # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
-    # https://huggingface.co/docs/datasets/loading_datasets.html.
+
+    loaders = get_loader()
+    data_loaders = {
+        "nl_nl_tr": loaders[0],
+        "pl_nl_tr": loaders[1],
+        "nl_pl_tr": loaders[2],
+        "nl_nl_va": loaders[3],
+        "pl_nl_va": loaders[4],
+        "nl_pl_va": loaders[5],
+    }
+    
+    for data_type, data_loader in data_loaders.items():
+        print(f"{data_type} size: {len(data_loader.dataset)}\t{data_type} dataloader size: {len(data_loader)}")
 
     # Load pretrained model and tokenizer
     #
@@ -137,101 +166,9 @@ def main():
     if len(tokenizer) > embedding_size:
         model.resize_token_embeddings(len(tokenizer))
 
-    # Set decoder_start_token_id
-    if model.config.decoder_start_token_id is None and isinstance(tokenizer, (MBartTokenizer, MBartTokenizerFast)):
-        assert (
-            args.target_lang is not None and args.source_lang is not None
-        ), "mBart requires --target_lang and --source_lang"
-        if isinstance(tokenizer, MBartTokenizer):
-            model.config.decoder_start_token_id = tokenizer.lang_code_to_id[args.target_lang]
-        else:
-            model.config.decoder_start_token_id = tokenizer.convert_tokens_to_ids(args.target_lang)
-
-    if model.config.decoder_start_token_id is None:
-        raise ValueError("Make sure that `config.decoder_start_token_id` is correctly defined")
-
-    prefix = args.source_prefix if args.source_prefix is not None else ""
-
-    # Preprocessing the datasets.
-    # First we tokenize all the texts.
-    column_names = raw_datasets["train"].column_names
-
-    # For translation we set the codes of our source and target languages (only useful for mBART, the others will
-    # ignore those attributes).
-    if isinstance(tokenizer, (MBartTokenizer, MBartTokenizerFast)):
-        if args.source_lang is not None:
-            tokenizer.src_lang = args.source_lang
-        if args.target_lang is not None:
-            tokenizer.tgt_lang = args.target_lang
-
-    # Get the language codes for input/target.
-    source_lang = args.source_lang.split("_")[0]
-    target_lang = args.target_lang.split("_")[0]
-
-    padding = "max_length" if args.pad_to_max_length else False
-
-    # Temporarily set max_target_length for training.
-    max_target_length = args.max_target_length
-    padding = "max_length" if args.pad_to_max_length else False
-
-    def preprocess_function(examples):
-        inputs = [ex[source_lang] for ex in examples["translation"]]
-        targets = [ex[target_lang] for ex in examples["translation"]]
-        inputs = [prefix + inp for inp in inputs]
-        model_inputs = tokenizer(inputs, max_length=args.max_source_length, padding=padding, truncation=True)
-
-        # Tokenize targets with the `text_target` keyword argument
-        labels = tokenizer(text_target=targets, max_length=max_target_length, padding=padding, truncation=True)
-
-        # If we are padding here, replace all tokenizer.pad_token_id in the labels by -100 when we want to ignore
-        # padding in the loss.
-        if padding == "max_length" and args.ignore_pad_token_for_loss:
-            labels["input_ids"] = [
-                [(l if l != tokenizer.pad_token_id else -100) for l in label] for label in labels["input_ids"]
-            ]
-
-        model_inputs["labels"] = labels["input_ids"]
-        return model_inputs
-
-    with accelerator.main_process_first():
-        processed_datasets = raw_datasets.map(
-            preprocess_function,
-            batched=True,
-            num_proc=args.preprocessing_num_workers,
-            remove_columns=column_names,
-            load_from_cache_file=not args.overwrite_cache,
-            desc="Running tokenizer on dataset",
-        )
-
-    train_dataset = processed_datasets["train"]
-    eval_dataset = processed_datasets["validation"]
-
-    # Log a few random samples from the training set:
-    for index in random.sample(range(len(train_dataset)), 3):
-        logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
-
     # DataLoaders creation:
     label_pad_token_id = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
-    if args.pad_to_max_length:
-        # If padding was already done ot max length, we use the default data collator that will just convert everything
-        # to tensors.
-        data_collator = default_data_collator
-    else:
-        # Otherwise, `DataCollatorWithPadding` will apply dynamic padding for us (by padding to the maximum length of
-        # the samples passed). When using mixed precision, we add `pad_to_multiple_of=8` to pad all tensors to multiple
-        # of 8s, which will enable the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-        data_collator = DataCollatorForSeq2Seq(
-            tokenizer,
-            model=model,
-            label_pad_token_id=label_pad_token_id,
-            pad_to_multiple_of=8 if accelerator.use_fp16 else None,
-        )
-
-    train_dataloader = DataLoader(
-        train_dataset, shuffle=True, collate_fn=data_collator, batch_size=args.per_device_train_batch_size
-    )
-    eval_dataloader = DataLoader(eval_dataset, collate_fn=data_collator, batch_size=args.per_device_eval_batch_size)
-
+    
     # Optimizer
     # Split weights in two groups, one with weight decay and the other not.
     no_decay = ["bias", "LayerNorm.weight", "layer_norm.weight"]
