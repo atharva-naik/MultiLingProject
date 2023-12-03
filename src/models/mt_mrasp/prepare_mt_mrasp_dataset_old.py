@@ -1,7 +1,6 @@
 
 import os
 import random
-import json
 from collections import defaultdict
 from datasets import load_dataset
 from typing import *
@@ -11,8 +10,6 @@ from torch.utils.data import (
     Dataset,
     DataLoader
 )
-
-from datasets import Dataset as HFDataset
 from transformers import AutoTokenizer
 from ..codet5 import (
     CONALA_TRANS_NL_DATA, 
@@ -29,21 +26,15 @@ class MTLMraspDataset(Dataset):
         self.max_length = max_length
         self.padding = padding
         self.tokenizer = tokenizer
-        self.tokenized_data_path = f"dataset/tokenized/{dataset}_{len(data)}_eval_{self.eval}"
-        if self.tokenized_data_path is not None and os.path.exists(self.tokenized_data_path):
+        self.tokenized_data_path = f"dataset/tokenized/{dataset}_{self.eval}.jsonl"
+
+        if not self.eval and self.tokenized_data_path is not None and os.path.exists(self.tokenized_data_path):
             # If tokenized data exists, load it from disk
-            print(f"Reading {dataset} from disk")
-            data = HFDataset.load_from_disk(self.tokenized_data_path)
-            self.data = []
-            for data_point in data:
-                self.data.append({k : torch.tensor(v) for k, v in data_point.items()})
-            print(f"Length {len(self.data)}")
+            with open(self.tokenized_data_path, 'r') as f:
+                self.data = json.load(f)
         else:
             # Tokenize the data and save to disk
             self.data = self._tokenize_data(data)
-            if self.tokenized_data_path is not None:
-                data = HFDataset.from_list(self.data)
-                data.save_to_disk(self.tokenized_data_path)
 
 
     def _tokenize_data(self, data):
@@ -82,12 +73,12 @@ class MTLMraspDataset(Dataset):
 
 
 
+
 def get_mt_mrasp_loaders(args):
     from src.datautils import read_jsonl
     # filt_k_conala = args.conala_topk
     # filt_k_conala = 50000
-    filt_k_conala = 10000
-    print(f"\nfilt_k_conala: {filt_k_conala}\n")
+    filt_k_conala = 5000
     conala_mined_dataset = load_dataset("neulab/conala", "mined", split=f"train[:{filt_k_conala}]")
     conala_code_transforms = read_jsonl("/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl")
     codegen_data = []
@@ -235,14 +226,10 @@ def get_mt_mrasp_loaders(args):
         doctrans_data += additional_doctrans_data
     
     # while len(codegen_data) > 100000:
-    #     codegen_data, _ = split_data(codegen_data, val_size=0.2)
-    #     codesum_data, _ = split_data(codesum_data, val_size=0.2)
-    #     doctrans_data, _ = split_data(doctrans_data, val_size=0.2)
-
-    while len(codegen_data) > 50000:
-        codegen_data, _ = split_data(codegen_data, val_size=0.2)
-        codesum_data, _ = split_data(codesum_data, val_size=0.2)
-        doctrans_data, _ = split_data(doctrans_data, val_size=0.2)
+    #     print(f"Stratifying {len(codegen_data)}")
+    #     codegen_data, _ = split_data(codegen_data)
+    #     codesum_data, _ = split_data(codesum_data)
+    #     doctrans_data, _ = split_data(doctrans_data)
 
     print(f"{len(codegen_data)} CodeGen instances")
     print(f"{len(codesum_data)} CodeSum instances")
@@ -256,11 +243,6 @@ def get_mt_mrasp_loaders(args):
     tmp_val_size = len(dt_train) - expected_train_size
     tmp_val_ratio = tmp_val_size / len(dt_train)
     dt_train, _ = split_data(dt_train, tmp_val_ratio)
-
-
-    print(f"{len(cg_train)} CodeGen Train instances")
-    print(f"{len(cs_train)} CodeSum Train instances")
-    print(f"{len(dt_train)} DocTrans Train instances")
 
     tasks = ["nl_pl", "pl_nl", "nl_nl"]
     task_to_train_data = {"nl_pl": cg_train, "pl_nl": cs_train, "nl_nl": dt_train}
@@ -280,15 +262,15 @@ def get_mt_mrasp_loaders(args):
         for rec in val_data: val_dist[rec['stratify']] += 1
         train_dist = dict(train_dist)
         val_dist = dict(val_dist)
-        print("\n"),
+        print("\n")
         for subset in train_dist:
             print('train-'+subset+f": {round(100*train_dist[subset]/len(train_data), 2)}%")
             print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
         print("\n")
-        train_dataset = MTLMraspDataset(train_data, tokenizer, eval=False, dataset=task)
-        val_dataset = MTLMraspDataset(val_data, tokenizer, eval=True, dataset=task)
+        train_dataset = MTLMraspDataset(train_data, tokenizer, eval=False)
+        val_dataset = MTLMraspDataset(val_data, tokenizer, eval=True)
         trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
-        valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=False)
+        valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
 
         task_to_train_dataloader[task] = trainloader
         task_to_val_dataloader[task] = valloader

@@ -111,7 +111,7 @@ def main():
     
     max_loader_size = 0
     for data_type, data_loader in data_loaders.items():
-        accelerator.print(f"{data_type} size: {len(data_loader.dataset)}\t{data_type} dataloader size: {len(data_loader)}")
+        print(f"{data_type} size: {len(data_loader.dataset)}\t{data_type} dataloader size: {len(data_loader)}")
         if "tr" in data_type and len(data_loader) > max_loader_size:
             max_loader_size = len(data_loader)
             
@@ -166,7 +166,7 @@ def main():
     model, optimizer, lr_scheduler = accelerator.prepare(
         model, optimizer, lr_scheduler
     )
-
+    
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
     # num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
     if overrode_max_train_steps:
@@ -187,14 +187,13 @@ def main():
     # Train!
     total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
-    accelerator.print("***** Running training *****")
-    accelerator.print(f"  Num examples = {len(data_loaders['nl_nl_tr'].dataset)}")
-    accelerator.print(f"  Num Epochs = {args.num_train_epochs}")
-    accelerator.print(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
-    accelerator.print(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
-    accelerator.print(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
-    accelerator.print(f"  Total optimization steps = {args.max_train_steps}")
-   
+    print("***** Running training *****")
+    print(f"  Num examples = {len(data_loaders['nl_nl_tr'].dataset)}")
+    print(f"  Num Epochs = {args.num_train_epochs}")
+    print(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
+    print(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
+    print(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
+    print(f"  Total optimization steps = {args.max_train_steps}")
     # Only show the progress bar once on each machine.
     progress_bar = tqdm(range(args.max_train_steps), disable=not accelerator.is_local_main_process)
     completed_steps = 0
@@ -223,7 +222,8 @@ def main():
             loss = 0.0
             # nl_nl training
             nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
-            loss1 = model(**nl_nl_batch).loss
+            outputs = model(**nl_nl_batch)
+            loss1 = outputs.loss
             tr_nl_nl_loss += loss1['loss'].detach().float()
             loss += loss1['loss']
             if 'contrast_loss' in loss1:
@@ -232,7 +232,8 @@ def main():
             
             # nl_pl training
             nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
-            loss2 = model(**nl_pl_batch).loss
+            outputs = model(**nl_pl_batch)
+            loss2 = outputs.loss
             tr_nl_pl_loss += loss2['loss'].detach().float()
             loss += loss2['loss']
             if 'contrast_loss' in loss2:
@@ -241,38 +242,40 @@ def main():
                
             # pl_nl training
             pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
-            loss3 = model(**pl_nl_batch).loss
+            outputs = model(**pl_nl_batch)
+            loss3 = outputs.loss
             tr_pl_nl_loss += loss3['loss'].detach().float()
             loss += loss3['loss']
             if 'contrast_loss' in loss3:
                 tr_pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
                 loss += loss3['contrast_loss']
                 
-            total_loss += loss.detach().float()
             loss = loss/3
+            total_loss += loss.detach().float()
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
             
             if step % args.gradient_accumulation_steps == 0 or step == len(data_loaders["nl_nl_tr"]) - 1:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
                 progress_bar.update(1)
                 completed_steps += 1
+
+            # del loss1
+            # del loss2
+            # del loss3
+            # del loss
+            # del outputs
+            # gc.collect()
+            # torch.cuda.empty_cache()
             
             if completed_steps % checkpointing_steps == 0:
                 output_dir = f"step_{completed_steps }"
                 if args.output_dir is not None:
                     output_dir = os.path.join(args.output_dir, output_dir)
-                
-                accelerator.wait_for_everyone()
-                unwrapped_model = accelerator.unwrap_model(model)
-                unwrapped_model.save_pretrained(
-                    args.output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save
-                )
-                if accelerator.is_main_process:
-                    tokenizer.save_pretrained(args.output_dir)
+                accelerator.save_state(output_dir)
 
                 model.eval()
 
@@ -288,9 +291,11 @@ def main():
                 total_val_loss = 0.0
                     
                 samples_seen = 0
-                accelerator.print("\nDoing Validation run\n")
+                print("\nDoing Validation run\n")
                 for step, (nl_nl_val_batch, nl_pl_val_batch, pl_nl_val_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
-                    val_loss = 0
+                    
+                    val_loss = 0.0
+                    
                     with torch.no_grad():
                         
                         # nl_nl training
@@ -323,36 +328,28 @@ def main():
                             val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
                             val_loss += val_loss3['contrast_loss']
                         
+                        val_loss = val_loss/3
                         total_val_loss += val_loss.detach().float()
-                        
-                if accelerator.is_main_process:
-                    results = {
-                        # "bleu": eval_metric["score"],
-                        "epoch": epoch,
-                        "step": completed_steps,
-                        "tr_nl_nl_loss": tr_nl_nl_loss / checkpointing_steps,
-                        "tr_nl_nl_contrast_loss": tr_nl_nl_contrast_loss / checkpointing_steps,
-                        "tr_pl_nl_loss": tr_pl_nl_loss / checkpointing_steps,
-                        "tr_pl_nl_contrast_loss": tr_pl_nl_contrast_loss / checkpointing_steps,
-                        "tr_nl_pl_loss": tr_nl_pl_loss / checkpointing_steps,
-                        "tr_nl_pl_contrast_loss": tr_nl_pl_contrast_loss / checkpointing_steps,
-                        "train_loss": total_loss / (3* checkpointing_steps),
-                        
-                        "val_nl_nl_loss": val_nl_nl_loss / (step+1),
-                        "val_nl_nl_contrast_loss": val_nl_nl_contrast_loss / (step+1),
-                        "val_nl_pl_loss": val_nl_pl_loss / (step+1),
-                        "val_nl_pl_contrast_loss": val_nl_pl_contrast_loss / (step+1),
-                        "val_pl_nl_loss": val_pl_nl_loss / (step+1),
-                        "val_pl_nl_contrast_loss": val_pl_nl_contrast_loss / (step+1),
-                        "val_loss": total_val_loss / (3 *  (step+1)),
-                    }
-                    
-                    accelerator.print(f"\n\nResults steps {completed_steps}: \n", flush=True)
-                    for key, val in results.items():
-                        accelerator.print(f"{key}\t{val}", flush=True)
-                    accelerator.print("\n")
                 
+                results = {
+                    # "bleu": eval_metric["score"],
+                    "epoch": epoch,
+                    "step": completed_steps,
+                    "tr_nl_nl_loss": tr_nl_nl_loss.item() / checkpointing_steps,
+                    "tr_nl_pl_loss": tr_nl_pl_loss.item() / checkpointing_steps,
+                    "tr_pl_nl_loss": tr_pl_nl_loss.item() / checkpointing_steps,
+                    "train_loss": total_loss.item() / checkpointing_steps,
+                    "val_nl_nl_loss": val_nl_nl_loss.item() / len(data_loaders["nl_nl_va"]),
+                    "val_nl_pl_loss": val_nl_pl_loss.item() / len(data_loaders["nl_pl_va"]),
+                    "val_pl_nl_loss": val_pl_nl_loss.item() / len(data_loaders["pl_nl_va"]),
+                    "val_loss": total_val_loss.item() / len(data_loaders["nl_nl_va"]),
+                }
                 model.train()
+                
+                print(f"\n\nResults steps {completed_steps}: \n")
+                for key, val in results.items():
+                    print(f"{key}\t{val}")
+                print("\n")
                 
                 tr_nl_nl_loss = 0.0
                 tr_nl_nl_contrast_loss = 0.0
@@ -366,7 +363,24 @@ def main():
                 total_loss = 0.0
                 
             if completed_steps >= args.max_train_steps:
-                break            
+                break
+
+        if epoch < args.num_train_epochs - 1:
+            accelerator.wait_for_everyone()
+            unwrapped_model = accelerator.unwrap_model(model)
+            unwrapped_model.save_pretrained(
+                args.output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save
+            )
+            if accelerator.is_main_process:
+                tokenizer.save_pretrained(args.output_dir)
+
+        if args.checkpointing_steps == "epoch":
+            output_dir = f"epoch_{epoch}"
+            if args.output_dir is not None:
+                output_dir = os.path.join(args.output_dir, output_dir)
+            accelerator.save_state(output_dir)
+
+    accelerator.end_training()
 
     if args.output_dir is not None:
         accelerator.wait_for_everyone()
