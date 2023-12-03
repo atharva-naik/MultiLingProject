@@ -252,7 +252,6 @@ def main():
             # print(f"tr_pl_nl_contrast_loss: {loss3['contrast_loss'].detach().float()}")
                  
             loss = (loss1['loss'] + loss2['loss'] + loss3['loss'] + loss1['contrast_loss'] + loss2['contrast_loss'] + loss3['contrast_loss'])/3
-            print(f"\nloss: {loss}")
             total_loss += loss.detach().float()
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
@@ -265,16 +264,6 @@ def main():
                 progress_bar.update(1)
                 completed_steps += 1
 
-            if isinstance(checkpointing_steps, int):
-                if completed_steps % checkpointing_steps == 0:
-                    output_dir = f"step_{completed_steps }"
-                    if args.output_dir is not None:
-                        output_dir = os.path.join(args.output_dir, output_dir)
-                    accelerator.save_state(output_dir)
-
-            if completed_steps >= args.max_train_steps:
-                break
-            
             del loss1
             del loss2
             del loss3
@@ -282,110 +271,82 @@ def main():
             del outputs
             gc.collect()
             torch.cuda.empty_cache()
-
-        model.eval()
-
-        gen_kwargs = {
-            "max_length": args.max_target_length if args is not None else config.max_length,
-            "num_beams": args.num_beams,
-        }
-        
-        val_nl_nl_loss = 0.0
-        val_nl_nl_contrast_loss = 0.0
-        
-        val_nl_pl_loss = 0.0  
-        val_nl_pl_contrast_loss = 0.0
-
-        val_pl_nl_loss = 0.0
-        val_pl_nl_contrast_loss = 0.0
-        
-        total_val_loss = 0.0
             
-        samples_seen = 0
-        for step, (nl_nl_val_batch, nl_pl_val_batch, pl_nl_val_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
-            
-            with torch.no_grad():
+            if completed_steps % checkpointing_steps == 0:
+                output_dir = f"step_{completed_steps }"
+                if args.output_dir is not None:
+                    output_dir = os.path.join(args.output_dir, output_dir)
+                accelerator.save_state(output_dir)
+
+                model.eval()
+
+                val_nl_nl_loss = 0.0
+                val_nl_nl_contrast_loss = 0.0
                 
-                # nl_nl training
-                nl_nl_val_batch = {k: v.to(accelerator.device) for k, v in nl_nl_val_batch.items()}
-                outputs = model(**nl_nl_val_batch)
-                val_loss1 = outputs.loss
-                val_nl_nl_loss += val_loss1['loss'].detach().float()
-                val_nl_nl_contrast_loss += val_loss1['contrast_loss'].detach().float()
+                val_nl_pl_loss = 0.0  
+                val_nl_pl_contrast_loss = 0.0
+
+                val_pl_nl_loss = 0.0
+                val_pl_nl_contrast_loss = 0.0
                 
-                # nl_pl training
-                nl_pl_val_batch = {k: v.to(accelerator.device) for k, v in nl_pl_val_batch.items()}
-                outputs = model(**nl_pl_val_batch)
-                val_loss2 = outputs.loss
-                val_nl_pl_loss += val_loss2['loss'].detach().float()
-                val_nl_pl_contrast_loss += val_loss2['contrast_loss'].detach().float()
-                            
-                # pl_nl training
-                pl_nl_val_batch = {k: v.to(accelerator.device) for k, v in pl_nl_val_batch.items()}
-                outputs = model(**pl_nl_val_batch)
-                val_loss3 = outputs.loss
-                val_pl_nl_loss += val_loss3['loss'].detach().float()
-                val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
+                total_val_loss = 0.0
+                    
+                samples_seen = 0
+                print("\nDoing Validation run\n")
+                for step, (nl_nl_val_batch, nl_pl_val_batch, pl_nl_val_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
+                    
+                    with torch.no_grad():
+                        
+                        # nl_nl training
+                        nl_nl_val_batch = {k: v.to(accelerator.device) for k, v in nl_nl_val_batch.items()}
+                        outputs = model(**nl_nl_val_batch)
+                        val_loss1 = outputs.loss
+                        val_nl_nl_loss += val_loss1['loss'].detach().float()
+                        val_nl_nl_contrast_loss += val_loss1['contrast_loss'].detach().float()
+                        
+                        # nl_pl training
+                        nl_pl_val_batch = {k: v.to(accelerator.device) for k, v in nl_pl_val_batch.items()}
+                        outputs = model(**nl_pl_val_batch)
+                        val_loss2 = outputs.loss
+                        val_nl_pl_loss += val_loss2['loss'].detach().float()
+                        val_nl_pl_contrast_loss += val_loss2['contrast_loss'].detach().float()
+                                    
+                        # pl_nl training
+                        pl_nl_val_batch = {k: v.to(accelerator.device) for k, v in pl_nl_val_batch.items()}
+                        outputs = model(**pl_nl_val_batch)
+                        val_loss3 = outputs.loss
+                        val_pl_nl_loss += val_loss3['loss'].detach().float()
+                        val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
+                        
+                        val_loss = (val_loss1['loss'] + val_loss2['loss'] + val_loss3['loss'] + val_loss1['contrast_loss'] + val_loss2['contrast_loss'] + val_loss3['contrast_loss'])/3
+                        total_val_loss += val_loss.detach().float()
                 
-                val_loss = (val_loss1['loss'] + val_loss2['loss'] + val_loss3['loss'] + val_loss1['contrast_loss'] + val_loss2['contrast_loss'] + val_loss3['contrast_loss'])/3
-                total_val_loss += loss.detach().float()
-                              
-        #         generated_tokens = accelerator.unwrap_model(model).generate(
-        #             batch["input_ids"],
-        #             attention_mask=batch["attention_mask"],
-        #             **gen_kwargs,
-        #         )
-
-        #         generated_tokens = accelerator.pad_across_processes(
-        #             generated_tokens, dim=1, pad_index=tokenizer.pad_token_id
-        #         )
-        #         labels = batch["labels"]
-        #         if not args.pad_to_max_length:
-        #             # If we did not pad to max length, we need to pad the labels too
-        #             labels = accelerator.pad_across_processes(batch["labels"], dim=1, pad_index=tokenizer.pad_token_id)
-
-        #         generated_tokens = accelerator.gather(generated_tokens).cpu().numpy()
-        #         labels = accelerator.gather(labels).cpu().numpy()
-
-        #         if args.ignore_pad_token_for_loss:
-        #             # Replace -100 in the labels as we can't decode them.
-        #             labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-
-        #         decoded_preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
-        #         decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-        #         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
-
-        #         # If we are in a multiprocess environment, the last batch has duplicates
-        #         if accelerator.num_processes > 1:
-        #             if step == len(eval_dataloader) - 1:
-        #                 decoded_preds = decoded_preds[: len(eval_dataloader.dataset) - samples_seen]
-        #                 decoded_labels = decoded_labels[: len(eval_dataloader.dataset) - samples_seen]
-        #             else:
-        #                 samples_seen += len(decoded_labels)
-
-        #         metric.add_batch(predictions=decoded_preds, references=decoded_labels)
-        # eval_metric = metric.compute()
-        # print({"bleu": eval_metric["score"]})
-        
-        results = {
-            # "bleu": eval_metric["score"],
-            "epoch": epoch,
-            "step": completed_steps,
-            "tr_nl_nl_loss": tr_nl_nl_loss.item() / len(data_loaders["nl_nl_tr"]),
-            "tr_nl_pl_loss": tr_nl_pl_loss.item() / len(data_loaders["nl_pl_tr"]),
-            "tr_pl_nl_loss": tr_pl_nl_loss.item() / len(data_loaders["pl_nl_tr"]),
-            "train_loss": total_loss.item() / len(data_loaders["nl_nl_tr"]),
-            "val_nl_nl_loss": val_nl_nl_loss.item() / len(data_loaders["nl_nl_va"]),
-            "val_nl_pl_loss": val_nl_pl_loss.item() / len(data_loaders["nl_pl_va"]),
-            "val_pl_nl_loss": val_pl_nl_loss.item() / len(data_loaders["pl_nl_va"]),
-            "val_loss": total_val_loss.item() / len(data_loaders["nl_nl_va"]),
-        }
-        
-        print(f"\n\nResults steps {completed_steps}: \n")
-        for key, val in results.items():
-            print(f"{key}\t{val}")
-        print("\n")
+                results = {
+                    # "bleu": eval_metric["score"],
+                    "epoch": epoch,
+                    "step": completed_steps,
+                    "tr_nl_nl_loss": tr_nl_nl_loss.item() / checkpointing_steps,
+                    "tr_nl_pl_loss": tr_nl_pl_loss.item() / checkpointing_steps,
+                    "tr_pl_nl_loss": tr_pl_nl_loss.item() / checkpointing_steps,
+                    "train_loss": total_loss.item() / checkpointing_steps,
+                    # "tr_nl_nl_loss": tr_nl_nl_loss.item() / len(data_loaders["nl_nl_tr"]),
+                    # "tr_nl_pl_loss": tr_nl_pl_loss.item() / len(data_loaders["nl_pl_tr"]),
+                    # "tr_pl_nl_loss": tr_pl_nl_loss.item() / len(data_loaders["pl_nl_tr"]),
+                    # "train_loss": total_loss.item() / len(data_loaders["nl_nl_tr"]),
+                    "val_nl_nl_loss": val_nl_nl_loss.item() / len(data_loaders["nl_nl_va"]),
+                    "val_nl_pl_loss": val_nl_pl_loss.item() / len(data_loaders["nl_pl_va"]),
+                    "val_pl_nl_loss": val_pl_nl_loss.item() / len(data_loaders["pl_nl_va"]),
+                    "val_loss": total_val_loss.item() / len(data_loaders["nl_nl_va"]),
+                }
+                model.train()
+                
+                print(f"\n\nResults steps {completed_steps}: \n")
+                for key, val in results.items():
+                    print(f"{key}\t{val}")
+                print("\n")
+                
+            if completed_steps >= args.max_train_steps:
+                break
 
         if epoch < args.num_train_epochs - 1:
             accelerator.wait_for_everyone()

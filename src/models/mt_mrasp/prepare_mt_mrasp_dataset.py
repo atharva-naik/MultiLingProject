@@ -16,7 +16,6 @@ from ..codet5 import (
     CODESEARCHNET_TRANS_NL_DATA,
     split_data
 )
-import gc
 
 
 class MTLMraspDataset(Dataset):
@@ -237,6 +236,11 @@ def get_mt_mrasp_loaders(args):
     cg_train, cg_val = split_data(codegen_data)
     cs_train, cs_val = split_data(codesum_data)
     dt_train, dt_val = split_data(doctrans_data)
+
+    expected_train_size = min(len(cg_train), len(cs_train))
+    tmp_val_size = len(dt_train) - expected_train_size
+    tmp_val_ratio = tmp_val_size / len(dt_train)
+    dt_train, _ = split_data(dt_train, tmp_val_ratio)
 
     tasks = ["nl_pl", "pl_nl", "nl_nl"]
     task_to_train_data = {"nl_pl": cg_train, "pl_nl": cs_train, "nl_nl": dt_train}
