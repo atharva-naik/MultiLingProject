@@ -16,6 +16,7 @@ from ..codet5 import (
     CODESEARCHNET_TRANS_NL_DATA,
     split_data
 )
+import gc
 
 
 class MTLMraspDataset(Dataset):

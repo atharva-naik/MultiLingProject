@@ -14,7 +14,7 @@ from accelerate import Accelerator
 from accelerate.logging import get_logger
 from accelerate.utils import set_seed
 from tqdm.auto import tqdm
-
+import gc
 import transformers
 from transformers import (
     AutoConfig,
@@ -219,10 +219,10 @@ def main():
             
         for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_tr"], data_loaders["nl_pl_tr"], data_loaders["pl_nl_tr"])):
             
-            print("\n\nnl_nl_batch:")
-            for key, val in nl_nl_batch.items():
-                print(key, val.shape)
-            print(f"\n{nl_nl_batch['contrast_mask']}\n")
+            # print("\n\nnl_nl_batch:")
+            # for key, val in nl_nl_batch.items():
+            #     print(key, val.shape)
+            # print(f"\n{nl_nl_batch['contrast_mask']}\n")
             
             # nl_nl training
             nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
@@ -230,8 +230,8 @@ def main():
             loss1 = outputs.loss
             tr_nl_nl_loss += loss1['loss'].detach().float()
             tr_nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
-            print(f"\ntr_nl_nl_loss: {loss1['loss'].detach().float()}")
-            print(f"tr_nl_nl_contrast_loss: {loss1['contrast_loss'].detach().float()}")
+            # print(f"\ntr_nl_nl_loss: {loss1['loss'].detach().float()}")
+            # print(f"tr_nl_nl_contrast_loss: {loss1['contrast_loss'].detach().float()}")
             
             # nl_pl training
             nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
@@ -239,8 +239,8 @@ def main():
             loss2 = outputs.loss
             tr_nl_pl_loss += loss2['loss'].detach().float()
             tr_nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
-            print(f"\ntr_nl_pl_loss: {loss2['loss'].detach().float()}")
-            print(f"tr_nl_pl_contrast_loss: {loss2['contrast_loss'].detach().float()}")
+            # print(f"\ntr_nl_pl_loss: {loss2['loss'].detach().float()}")
+            # print(f"tr_nl_pl_contrast_loss: {loss2['contrast_loss'].detach().float()}")
                     
             # pl_nl training
             pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
@@ -248,15 +248,12 @@ def main():
             loss3 = outputs.loss
             tr_pl_nl_loss += loss3['loss'].detach().float()
             tr_pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
-            print(f"\ntr_pl_nl_loss: {loss3['loss'].detach().float()}")
-            print(f"tr_pl_nl_contrast_loss: {loss3['contrast_loss'].detach().float()}")
+            # print(f"\ntr_pl_nl_loss: {loss3['loss'].detach().float()}")
+            # print(f"tr_pl_nl_contrast_loss: {loss3['contrast_loss'].detach().float()}")
                  
-            loss = (
-                loss1['loss'].detach().float() + loss2['loss'].detach().float() + loss3['loss'].detach().float() +
-                loss1['contrast_loss'].detach().float() + loss2['contrast_loss'].detach().float() + loss3['contrast_loss'].detach().float()            
-            )/3
+            loss = (loss1['loss'] + loss2['loss'] + loss3['loss'] + loss1['contrast_loss'] + loss2['contrast_loss'] + loss3['contrast_loss'])/3
             print(f"\nloss: {loss}")
-            total_loss += loss
+            total_loss += loss.detach().float()
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
             
@@ -277,6 +274,14 @@ def main():
 
             if completed_steps >= args.max_train_steps:
                 break
+            
+            del loss1
+            del loss2
+            del loss3
+            del loss
+            del outputs
+            gc.collect()
+            torch.cuda.empty_cache()
 
         model.eval()
 
@@ -322,12 +327,8 @@ def main():
                 val_pl_nl_loss += val_loss3['loss'].detach().float()
                 val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
                 
-                val_loss = (
-                    val_loss1['loss'].detach().float() + val_loss2['loss'].detach().float() + val_loss3['loss'].detach().float() +
-                    val_loss1['contrast_loss'].detach().float() + val_loss2['contrast_loss'].detach().float() + val_loss3['contrast_loss'].detach().float()            
-                )/3
-                
-                total_val_loss += loss
+                val_loss = (val_loss1['loss'] + val_loss2['loss'] + val_loss3['loss'] + val_loss1['contrast_loss'] + val_loss2['contrast_loss'] + val_loss3['contrast_loss'])/3
+                total_val_loss += loss.detach().float()
                               
         #         generated_tokens = accelerator.unwrap_model(model).generate(
         #             batch["input_ids"],

@@ -168,6 +168,12 @@ class MT_MRASP(T5PreTrainedModel):
         # ---------------------------------------------------------- Contrastive Part ----------------------------------------------------------
         
         if contrast_input_ids is not None and contrast_attention_mask is not None:
+            
+            if contrast_mask is not None:
+                contrast_input_ids = contrast_input_ids[contrast_mask]
+                contrast_attention_mask = contrast_attention_mask[contrast_mask]
+                hidden_states = hidden_states[contrast_mask]                  
+
             encoder_outputs_2 = self.encoder(
                 input_ids=contrast_input_ids,
                 attention_mask=contrast_attention_mask,
