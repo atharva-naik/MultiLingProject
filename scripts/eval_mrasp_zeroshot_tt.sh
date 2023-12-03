@@ -1,5 +1,5 @@
-SRC_LANG="da"
-TGT_LANG="en"
+SRC_LANG="en"
+TGT_LANG="zh"
 TASK="code_x_glue_tt_text_to_text"
 MRASP_MODEL="seq2seq_unified_full_cont"
 python -m src.models.codet5 --mode predict_mrasp \
