@@ -520,7 +520,7 @@ def predict_mrasp(args):
                 "tgt_text": inst[tgt_key]
             })
             # print(inst[tgt_key]) # NOTE: DEBUG
-            label_str.append(inst[tgt_key])
+            label_str.append([inst[tgt_key]])
     if args.task == "neulab/mconala":
         subset = args.tgt if args.src == "py" else args.src
         data_ = load_dataset(args.task, subset)       
@@ -542,7 +542,7 @@ def predict_mrasp(args):
                 "tgt_text": inst[tgt_key]
             })
             # print(inst[tgt_key]) # NOTE: DEBUG
-            label_str.append(inst[tgt_key])
+            label_str.append([inst[tgt_key]])
     if args.task == "neulab/odex":
         subset = args.tgt if args.src == "py" else args.src
         data_ = load_dataset(args.task, subset)       
@@ -564,7 +564,7 @@ def predict_mrasp(args):
                 "tgt_text": inst[tgt_key]
             })
             # print(inst[tgt_key]) # NOTE: DEBUG
-            label_str.append(inst[tgt_key])
+            label_str.append([inst[tgt_key]])
     elif args.task == "code_x_glue_tt_text_to_text":
         if args.tgt == "en":
             src_key = "source"
@@ -584,7 +584,7 @@ def predict_mrasp(args):
                 "src_text": inst[src_key],
                 "tgt_text": inst[tgt_key]
             })
-            label_str.append(inst[tgt_key])
+            label_str.append([inst[tgt_key]])
     dataset = PredictionDataset(data)
     for rec in tqdm(pipe(dataset, max_length=300)):
         pred_str.append(rec[0]["translation_text"])

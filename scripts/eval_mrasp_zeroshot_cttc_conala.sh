@@ -1,5 +1,5 @@
-SRC_LANG="en"
-TGT_LANG="py"
+SRC_LANG="py"
+TGT_LANG="en"
 TASK="neulab/conala"
 MRASP_MODEL="seq2seq_unified_full_cont"
 python -m src.models.codet5 --mode predict_mrasp \
