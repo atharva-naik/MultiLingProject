@@ -167,7 +167,10 @@ class MT_MRASP(T5PreTrainedModel):
 
         # ---------------------------------------------------------- Contrastive Part ----------------------------------------------------------
         
-        if contrast_input_ids is not None and contrast_attention_mask is not None:
+        zero_indices = (contrast_mask == 0).nonzero().squeeze().tolist()
+        if isinstance(zero_indices, int): zero_indices = [zero_indices]
+        
+        if contrast_input_ids is not None and contrast_attention_mask is not None and len(zero_indices) != len(contrast_mask):
             
             if contrast_mask is not None:
                 contrast_input_ids = contrast_input_ids[contrast_mask.type(torch.bool)]

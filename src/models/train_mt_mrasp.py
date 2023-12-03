@@ -219,28 +219,38 @@ def main():
             
         for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_tr"], data_loaders["nl_pl_tr"], data_loaders["pl_nl_tr"])):
             
+            loss = 0.0
             # nl_nl training
             nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
             outputs = model(**nl_nl_batch)
             loss1 = outputs.loss
             tr_nl_nl_loss += loss1['loss'].detach().float()
-            tr_nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
+            loss += loss1['loss']
+            if 'contrast_loss' in loss1:
+                tr_nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
+                loss += loss1['contrast_loss']
             
             # nl_pl training
             nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
             outputs = model(**nl_pl_batch)
             loss2 = outputs.loss
             tr_nl_pl_loss += loss2['loss'].detach().float()
-            tr_nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
+            loss += loss2['loss']
+            if 'contrast_loss' in loss2:
+                tr_nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
+                loss += loss2['contrast_loss']
                
             # pl_nl training
             pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
             outputs = model(**pl_nl_batch)
             loss3 = outputs.loss
             tr_pl_nl_loss += loss3['loss'].detach().float()
-            tr_pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
+            loss += loss3['loss']
+            if 'contrast_loss' in loss3:
+                tr_pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
+                loss += loss3['contrast_loss']
                 
-            loss = (loss1['loss'] + loss2['loss'] + loss3['loss'] + loss1['contrast_loss'] + loss2['contrast_loss'] + loss3['contrast_loss'])/3
+            loss = loss/3
             total_loss += loss.detach().float()
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
@@ -253,13 +263,13 @@ def main():
                 progress_bar.update(1)
                 completed_steps += 1
 
-            # del loss1
-            # del loss2
-            # del loss3
-            # del loss
-            # del outputs
-            # gc.collect()
-            # torch.cuda.empty_cache()
+            del loss1
+            del loss2
+            del loss3
+            del loss
+            del outputs
+            gc.collect()
+            torch.cuda.empty_cache()
             
             if completed_steps % checkpointing_steps == 0:
                 output_dir = f"step_{completed_steps }"
@@ -291,23 +301,32 @@ def main():
                         outputs = model(**nl_nl_val_batch)
                         val_loss1 = outputs.loss
                         val_nl_nl_loss += val_loss1['loss'].detach().float()
-                        val_nl_nl_contrast_loss += val_loss1['contrast_loss'].detach().float()
+                        val_loss += val_loss1['loss']
+                        if 'contrast_loss' in val_loss1:
+                            val_nl_nl_contrast_loss += val_loss1['contrast_loss'].detach().float()
+                            val_loss += val_loss1['contrast_loss']
                         
                         # nl_pl training
                         nl_pl_val_batch = {k: v.to(accelerator.device) for k, v in nl_pl_val_batch.items()}
                         outputs = model(**nl_pl_val_batch)
                         val_loss2 = outputs.loss
                         val_nl_pl_loss += val_loss2['loss'].detach().float()
-                        val_nl_pl_contrast_loss += val_loss2['contrast_loss'].detach().float()
+                        val_loss += val_loss2['loss']
+                        if 'contrast_loss' in val_loss2:
+                            val_nl_pl_contrast_loss += val_loss2['contrast_loss'].detach().float()
+                            val_loss += val_loss2['contrast_loss']
                                     
                         # pl_nl training
                         pl_nl_val_batch = {k: v.to(accelerator.device) for k, v in pl_nl_val_batch.items()}
                         outputs = model(**pl_nl_val_batch)
                         val_loss3 = outputs.loss
                         val_pl_nl_loss += val_loss3['loss'].detach().float()
-                        val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
+                        val_loss += val_loss3['loss']
+                        if 'contrast_loss' in val_loss3:
+                            val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
+                            val_loss += val_loss3['contrast_loss']
                         
-                        val_loss = (val_loss1['loss'] + val_loss2['loss'] + val_loss3['loss'] + val_loss1['contrast_loss'] + val_loss2['contrast_loss'] + val_loss3['contrast_loss'])/3
+                        val_loss = val_loss/3
                         total_val_loss += val_loss.detach().float()
                 
                 results = {
