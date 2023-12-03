@@ -51,7 +51,7 @@ class MTLMraspDataset(Dataset):
                 for key in contrast: model_inputs[f"contrast_{key}"] = contrast[key][0]
             else: model_inputs = data[i]
             self.data.append(model_inputs)
-            self.data = self.data[:1000]
+            # self.data = self.data[:1000]
 
 
     def __len__(self):
@@ -82,8 +82,8 @@ class MTLMraspDataset(Dataset):
 def get_mt_mrasp_loaders(args):
     from src.datautils import read_jsonl
     # filt_k_conala = args.conala_topk
-    filt_k_conala = 50000
-    # filt_k_conala = 100
+    # filt_k_conala = 50000
+    filt_k_conala = 10000
     conala_mined_dataset = load_dataset("neulab/conala", "mined", split=f"train[:{filt_k_conala}]")
     conala_code_transforms = read_jsonl("/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl")
     codegen_data = []

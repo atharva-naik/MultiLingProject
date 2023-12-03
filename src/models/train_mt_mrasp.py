@@ -219,19 +219,12 @@ def main():
             
         for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_tr"], data_loaders["nl_pl_tr"], data_loaders["pl_nl_tr"])):
             
-            # print("\n\nnl_nl_batch:")
-            # for key, val in nl_nl_batch.items():
-            #     print(key, val.shape)
-            # print(f"\n{nl_nl_batch['contrast_mask']}\n")
-            
             # nl_nl training
             nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
             outputs = model(**nl_nl_batch)
             loss1 = outputs.loss
             tr_nl_nl_loss += loss1['loss'].detach().float()
             tr_nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
-            # print(f"\ntr_nl_nl_loss: {loss1['loss'].detach().float()}")
-            # print(f"tr_nl_nl_contrast_loss: {loss1['contrast_loss'].detach().float()}")
             
             # nl_pl training
             nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
@@ -239,18 +232,14 @@ def main():
             loss2 = outputs.loss
             tr_nl_pl_loss += loss2['loss'].detach().float()
             tr_nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
-            # print(f"\ntr_nl_pl_loss: {loss2['loss'].detach().float()}")
-            # print(f"tr_nl_pl_contrast_loss: {loss2['contrast_loss'].detach().float()}")
-                    
+               
             # pl_nl training
             pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
             outputs = model(**pl_nl_batch)
             loss3 = outputs.loss
             tr_pl_nl_loss += loss3['loss'].detach().float()
             tr_pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
-            # print(f"\ntr_pl_nl_loss: {loss3['loss'].detach().float()}")
-            # print(f"tr_pl_nl_contrast_loss: {loss3['contrast_loss'].detach().float()}")
-                 
+                
             loss = (loss1['loss'] + loss2['loss'] + loss3['loss'] + loss1['contrast_loss'] + loss2['contrast_loss'] + loss3['contrast_loss'])/3
             total_loss += loss.detach().float()
             loss = loss / args.gradient_accumulation_steps
@@ -264,13 +253,13 @@ def main():
                 progress_bar.update(1)
                 completed_steps += 1
 
-            del loss1
-            del loss2
-            del loss3
-            del loss
-            del outputs
-            gc.collect()
-            torch.cuda.empty_cache()
+            # del loss1
+            # del loss2
+            # del loss3
+            # del loss
+            # del outputs
+            # gc.collect()
+            # torch.cuda.empty_cache()
             
             if completed_steps % checkpointing_steps == 0:
                 output_dir = f"step_{completed_steps }"
@@ -329,10 +318,6 @@ def main():
                     "tr_nl_pl_loss": tr_nl_pl_loss.item() / checkpointing_steps,
                     "tr_pl_nl_loss": tr_pl_nl_loss.item() / checkpointing_steps,
                     "train_loss": total_loss.item() / checkpointing_steps,
-                    # "tr_nl_nl_loss": tr_nl_nl_loss.item() / len(data_loaders["nl_nl_tr"]),
-                    # "tr_nl_pl_loss": tr_nl_pl_loss.item() / len(data_loaders["nl_pl_tr"]),
-                    # "tr_pl_nl_loss": tr_pl_nl_loss.item() / len(data_loaders["pl_nl_tr"]),
-                    # "train_loss": total_loss.item() / len(data_loaders["nl_nl_tr"]),
                     "val_nl_nl_loss": val_nl_nl_loss.item() / len(data_loaders["nl_nl_va"]),
                     "val_nl_pl_loss": val_nl_pl_loss.item() / len(data_loaders["nl_pl_va"]),
                     "val_pl_nl_loss": val_pl_nl_loss.item() / len(data_loaders["pl_nl_va"]),
@@ -340,10 +325,21 @@ def main():
                 }
                 model.train()
                 
-                print(f"\n\nResults steps {completed_steps}: \n")
+                print(f"\n\nResults steps {completed_steps}: \n", flush=True)
                 for key, val in results.items():
-                    print(f"{key}\t{val}")
+                    print(f"{key}\t{val}", flush=True)
                 print("\n")
+                
+                tr_nl_nl_loss = 0.0
+                tr_nl_nl_contrast_loss = 0.0
+                
+                tr_nl_pl_loss = 0.0  
+                tr_nl_pl_contrast_loss = 0.0
+
+                tr_pl_nl_loss = 0.0
+                tr_pl_nl_contrast_loss = 0.0
+                
+                total_loss = 0.0
                 
             if completed_steps >= args.max_train_steps:
                 break
