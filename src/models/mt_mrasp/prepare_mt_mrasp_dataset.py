@@ -18,7 +18,7 @@ from ..codet5 import (
 )
 
 
-class MTMraspDataset(Dataset):
+class MTLMraspDataset(Dataset):
     
     def __init__(
         self, 
@@ -260,8 +260,8 @@ def get_mt_mrasp_loaders(args):
             print('train-'+subset+f": {round(100*train_dist[subset]/len(train_data), 2)}%")
             print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
         print("\n")
-        train_dataset = MTMraspDataset(train_data, tokenizer, eval=False)
-        val_dataset = MTMraspDataset(val_data, tokenizer, eval=True)
+        train_dataset = MTLMraspDataset(train_data, tokenizer, eval=False)
+        val_dataset = MTLMraspDataset(val_data, tokenizer, eval=True)
         trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
         valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
 

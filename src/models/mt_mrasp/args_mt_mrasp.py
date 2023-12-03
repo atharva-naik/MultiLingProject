@@ -35,45 +35,10 @@ def mt_mrasp_parse_args():
         ),
     )
     parser.add_argument(
-        "--max_source_length",
-        type=int,
-        default=1024,
-        help=(
-            "The maximum total input sequence length after "
-            "tokenization.Sequences longer than this will be truncated, sequences shorter will be padded."
-        ),
-    )
-    parser.add_argument(
-        "--max_target_length",
-        type=int,
-        default=128,
-        help=(
-            "The maximum total sequence length for target text after "
-            "tokenization. Sequences longer than this will be truncated, sequences shorter will be padded."
-            "during ``evaluate`` and ``predict``."
-        ),
-    )
-    parser.add_argument(
-        "--pad_to_max_length",
-        type=bool,
-        default=False,
-        help=(
-            "Whether to pad all samples to model maximum sentence "
-            "length. If False, will pad the samples dynamically when batching to the maximum length in the batch. More"
-            "efficient on GPU but very bad for TPU."
-        ),
-    )
-    parser.add_argument(
         "--ignore_pad_token_for_loss",
         type=bool,
         default=True,
         help="Whether to ignore the tokens corresponding to padded labels in the loss computation or not.",
-    )
-    parser.add_argument(
-        "--source_prefix",
-        type=str,
-        default=None,
-        help="A prefix to add before every source text (useful for T5 models).",
     )
     
     # Training Hyperparameters arguments
@@ -162,21 +127,6 @@ def mt_mrasp_parse_args():
         type=str,
         default=None,
         help="If the training should continue from a checkpoint folder.",
-    )
-    parser.add_argument(
-        "--with_tracking",
-        action="store_true",
-        help="Whether to enable experiment trackers for logging.",
-    )
-    parser.add_argument(
-        "--report_to",
-        type=str,
-        default="all",
-        help=(
-            'The integration to report the results and logs to. Supported platforms are `"tensorboard"`,'
-            ' `"wandb"`, `"comet_ml"` and `"clearml"`. Use `"all"` (default) to report to all integrations.'
-            "Only applicable when `--with_tracking` is passed."
-        ),
     )
     args = parser.parse_args()
     return args

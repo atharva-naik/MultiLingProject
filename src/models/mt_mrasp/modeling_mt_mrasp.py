@@ -167,52 +167,58 @@ class MT_MRASP(T5PreTrainedModel):
 
         # ---------------------------------------------------------- Contrastive Part ----------------------------------------------------------
         
-        encoder_outputs_2 = self.encoder(
-            input_ids=contrast_input_ids,
-            attention_mask=contrast_attention_mask,
-        )
-        proj1 = torch.mean(hidden_states, dim=1)
-        proj2 = torch.mean(encoder_outputs_2[0], dim=1)
-        device = proj1.get_device()
-                
-        # Calculate similarity matrix between input and positive augs
-        features = torch.cat([proj1, proj2], dim=0)
-        features = torch.nn.functional.normalize(features, dim=1)
-        similarity_matrix = torch.matmul(features, features.T)
+        if contrast_input_ids is not None and contrast_attention_mask is not None:
+            encoder_outputs_2 = self.encoder(
+                input_ids=contrast_input_ids,
+                attention_mask=contrast_attention_mask,
+            )
+            proj1 = torch.mean(hidden_states, dim=1)
+            proj2 = torch.mean(encoder_outputs_2[0], dim=1)
+            device = proj1.get_device()
+                    
+            # Calculate similarity matrix between input and positive augs
+            features = torch.cat([proj1, proj2], dim=0)
+            features = torch.nn.functional.normalize(features, dim=1)
+            similarity_matrix = torch.matmul(features, features.T)
+            
+            # Generate labels for negatives (everything else in the batch is negative)
+            batch_size = proj1.shape[0]
+            nt_xnet_labels = torch.cat([torch.arange(batch_size) for i in range(2)], dim=0)
+            nt_xnet_labels = (nt_xnet_labels.unsqueeze(0) == nt_xnet_labels.unsqueeze(1)).float()
+            nt_xnet_labels = nt_xnet_labels.to(device)
+                        
+            # discard the main diagonal from both: nt_xnet_labels and similarities matrix
+            mask = torch.eye(nt_xnet_labels.shape[0], dtype=torch.bool).to(device)
+            nt_xnet_labels = nt_xnet_labels[~mask].view(nt_xnet_labels.shape[0], -1)
+            similarity_matrix = similarity_matrix[~mask].view(similarity_matrix.shape[0], -1)
+            # assert similarity_matrix.shape == nt_xnet_labels.shape
+
+            # select and combine multiple positives
+            positives = similarity_matrix[nt_xnet_labels.bool()].view(nt_xnet_labels.shape[0], -1)
+
+            # select only the negatives the negatives
+            negatives = similarity_matrix[~nt_xnet_labels.bool()].view(similarity_matrix.shape[0], -1)
+
+            logits = torch.cat([positives, negatives], dim=1)
+            nt_xnet_labels = torch.zeros(logits.shape[0], dtype=torch.long).to(device)
+
+            logits = logits / self.temperature
+                        
+            self.loss_fct = torch.nn.CrossEntropyLoss().to(self.device)
+            contrast_loss = self.loss_fct(logits, nt_xnet_labels) 
+            
+            loss_to_return = {'loss': loss, 'contrast_loss': contrast_loss}
         
-        # Generate labels for negatives (everything else in the batch is negative)
-        batch_size = proj1.shape[0]
-        nt_xnet_labels = torch.cat([torch.arange(batch_size) for i in range(2)], dim=0)
-        nt_xnet_labels = (nt_xnet_labels.unsqueeze(0) == nt_xnet_labels.unsqueeze(1)).float()
-        nt_xnet_labels = nt_xnet_labels.to(device)
-                    
-        # discard the main diagonal from both: nt_xnet_labels and similarities matrix
-        mask = torch.eye(nt_xnet_labels.shape[0], dtype=torch.bool).to(device)
-        nt_xnet_labels = nt_xnet_labels[~mask].view(nt_xnet_labels.shape[0], -1)
-        similarity_matrix = similarity_matrix[~mask].view(similarity_matrix.shape[0], -1)
-        # assert similarity_matrix.shape == nt_xnet_labels.shape
-
-        # select and combine multiple positives
-        positives = similarity_matrix[nt_xnet_labels.bool()].view(nt_xnet_labels.shape[0], -1)
-
-        # select only the negatives the negatives
-        negatives = similarity_matrix[~nt_xnet_labels.bool()].view(similarity_matrix.shape[0], -1)
-
-        logits = torch.cat([positives, negatives], dim=1)
-        nt_xnet_labels = torch.zeros(logits.shape[0], dtype=torch.long).to(device)
-
-        logits = logits / self.temperature
-                    
-        self.loss_fct = torch.nn.CrossEntropyLoss().to(self.device)
-        contrast_loss = self.loss_fct(logits, nt_xnet_labels) 
+        else:
+            loss_to_return = {'loss': loss}
         
         # Return Loss and Logits
         if not return_dict:
             output = (lm_logits,) + decoder_outputs[1:] + encoder_outputs
-            return ((loss,) + output) if loss is not None else output
+            return ((loss_to_return,) + output) if loss is not None else output
 
         return Seq2SeqLMOutput(
-            loss={'loss': loss, 'contrast_loss': contrast_loss},
+            loss=loss_to_return,
             logits=lm_logits,
             past_key_values=decoder_outputs.past_key_values,
             decoder_hidden_states=decoder_outputs.hidden_states,
