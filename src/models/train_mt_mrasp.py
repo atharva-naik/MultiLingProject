@@ -11,16 +11,17 @@ import evaluate
 import numpy as np
 import torch
 from accelerate import Accelerator
+from accelerate.logging import get_logger
 from accelerate.utils import set_seed
 from tqdm.auto import tqdm
-
+import gc
 import transformers
 from transformers import (
     AutoConfig,
     AutoTokenizer,
     get_scheduler,
 )
-from transformers.utils import check_min_version, send_example_telemetry
+from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
 # mt_mrap related imports
@@ -30,7 +31,7 @@ from .mt_mrasp.prepare_mt_mrasp_dataset import get_mt_mrasp_loaders
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 # check_min_version("4.27.0")
-
+logger = get_logger(__name__)
 # require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/translation/requirements.txt")
 
 
@@ -38,6 +39,10 @@ def main():
     # Parse the arguments
     args = mt_mrasp_parse_args()
     
+    print("\n Arguments: \n")
+    for key, val in vars(args).items():
+        print(f"{key}:\t{val}")
+    print("\n")
      # ------------------------------------- Helper Functions -------------------------------------
     
     def get_loader():
@@ -67,17 +72,7 @@ def main():
                 batch_data = next(nl_pl_loader)
                 return batch_data, nl_pl_loader
     
-
-    # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
-    # information sent is the one passed as arguments along with your Python/PyTorch versions.
-    send_example_telemetry("mt_mrasp_training", args)
-
-    # Initialize the accelerator. We will let the accelerator handle device placement for us in this example.
-    # If we're using tracking, we also need to initialize it here and it will by default pick up all supported trackers
-    # in the environment
-    accelerator = (
-        Accelerator(log_with=args.report_to, logging_dir=args.output_dir) if args.with_tracking else Accelerator()
-    )
+    accelerator = Accelerator()
 
     # Make one log on every process with the configuration for debugging.
     logging.basicConfig(
@@ -85,7 +80,7 @@ def main():
         datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO,
     )
-    print(accelerator.state, main_process_only=False)
+    logger.info(accelerator.state, main_process_only=False)
     if accelerator.is_local_main_process:
         datasets.utils.logging.set_verbosity_warning()
         transformers.utils.logging.set_verbosity_info()
@@ -186,13 +181,7 @@ def main():
     # We need to initialize the trackers we use, and also store our configuration.
     # We initialize the trackers only on main process because `accelerator.log`
     # only logs on main process and we don't want empty logs/runs on other processes.
-    if args.with_tracking:
-        if accelerator.is_main_process:
-            experiment_config = vars(args)
-            # TensorBoard cannot log Enums, need the raw value
-            experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
-            accelerator.init_trackers("translation_no_trainer", experiment_config)
-
+   
     metric = evaluate.load("bleu")
 
     # Train!
@@ -216,49 +205,53 @@ def main():
 
     for epoch in range(starting_epoch, args.num_train_epochs):
         model.train()
-        if args.with_tracking:
-            nl_nl_loss = 0
-            nl_nl_contrast_loss = 0
             
-            nl_pl_loss = 0  
-            nl_pl_contrast_loss = 0
+        tr_nl_nl_loss = 0.0
+        tr_nl_nl_contrast_loss = 0.0
+        
+        tr_nl_pl_loss = 0.0  
+        tr_nl_pl_contrast_loss = 0.0
 
-            pl_nl_loss = 0
-            pl_nl_contrast_loss = 0
+        tr_pl_nl_loss = 0.0
+        tr_pl_nl_contrast_loss = 0.0
+        
+        total_loss = 0.0
             
-            total_loss = 0
         for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_tr"], data_loaders["nl_pl_tr"], data_loaders["pl_nl_tr"])):
             
+            loss = 0.0
             # nl_nl training
-            print("\n\nnl_nl_batch:")
-            for key, val in nl_nl_batch.items():
-                print(key, val.shape)
-            print(f"\n{nl_nl_batch['contrast_mask']}\n")
             nl_nl_batch = {k: v.to(accelerator.device) for k, v in nl_nl_batch.items()}
             outputs = model(**nl_nl_batch)
             loss1 = outputs.loss
-            nl_nl_loss += loss1['loss'].detach().float()
-            nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
+            tr_nl_nl_loss += loss1['loss'].detach().float()
+            loss += loss1['loss']
+            if 'contrast_loss' in loss1:
+                tr_nl_nl_contrast_loss += loss1['contrast_loss'].detach().float()
+                loss += loss1['contrast_loss']
             
             # nl_pl training
             nl_pl_batch = {k: v.to(accelerator.device) for k, v in nl_pl_batch.items()}
             outputs = model(**nl_pl_batch)
             loss2 = outputs.loss
-            nl_pl_loss += loss2['loss'].detach().float()
-            nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
-                        
+            tr_nl_pl_loss += loss2['loss'].detach().float()
+            loss += loss2['loss']
+            if 'contrast_loss' in loss2:
+                tr_nl_pl_contrast_loss += loss2['contrast_loss'].detach().float()
+                loss += loss2['contrast_loss']
+               
             # pl_nl training
             pl_nl_batch = {k: v.to(accelerator.device) for k, v in pl_nl_batch.items()}
             outputs = model(**pl_nl_batch)
             loss3 = outputs.loss
-            pl_nl_loss += loss3['loss'].detach().float()
-            pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
-                        
-            loss= (
-                loss1['loss'].detach().float() + loss2['loss'].detach().float() + loss3['loss'].detach().float() +
-                loss1['contrast_loss'].detach().float() + loss2['contrast_loss'].detach().float() + loss3['contrast_loss'].detach().float()            
-            )/3
-            total_loss += loss
+            tr_pl_nl_loss += loss3['loss'].detach().float()
+            loss += loss3['loss']
+            if 'contrast_loss' in loss3:
+                tr_pl_nl_contrast_loss += loss3['contrast_loss'].detach().float()
+                loss += loss3['contrast_loss']
+                
+            loss = loss/3
+            total_loss += loss.detach().float()
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
             
@@ -270,76 +263,105 @@ def main():
                 progress_bar.update(1)
                 completed_steps += 1
 
-            if isinstance(checkpointing_steps, int):
-                if completed_steps % checkpointing_steps == 0:
-                    output_dir = f"step_{completed_steps }"
-                    if args.output_dir is not None:
-                        output_dir = os.path.join(args.output_dir, output_dir)
-                    accelerator.save_state(output_dir)
+            del loss1
+            del loss2
+            del loss3
+            del loss
+            del outputs
+            gc.collect()
+            torch.cuda.empty_cache()
+            
+            if completed_steps % checkpointing_steps == 0:
+                output_dir = f"step_{completed_steps }"
+                if args.output_dir is not None:
+                    output_dir = os.path.join(args.output_dir, output_dir)
+                accelerator.save_state(output_dir)
 
-            if completed_steps >= args.max_train_steps:
-                break
+                model.eval()
 
-        model.eval()
+                val_nl_nl_loss = 0.0
+                val_nl_nl_contrast_loss = 0.0
+                
+                val_nl_pl_loss = 0.0  
+                val_nl_pl_contrast_loss = 0.0
 
-        gen_kwargs = {
-            "max_length": args.max_target_length if args is not None else config.max_length,
-            "num_beams": args.num_beams,
-        }
-        samples_seen = 0
-        for step, (nl_nl_batch, nl_pl_batch, pl_nl_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
-            with torch.no_grad():
-                generated_tokens = accelerator.unwrap_model(model).generate(
-                    batch["input_ids"],
-                    attention_mask=batch["attention_mask"],
-                    **gen_kwargs,
-                )
-
-                generated_tokens = accelerator.pad_across_processes(
-                    generated_tokens, dim=1, pad_index=tokenizer.pad_token_id
-                )
-                labels = batch["labels"]
-                if not args.pad_to_max_length:
-                    # If we did not pad to max length, we need to pad the labels too
-                    labels = accelerator.pad_across_processes(batch["labels"], dim=1, pad_index=tokenizer.pad_token_id)
-
-                generated_tokens = accelerator.gather(generated_tokens).cpu().numpy()
-                labels = accelerator.gather(labels).cpu().numpy()
-
-                if args.ignore_pad_token_for_loss:
-                    # Replace -100 in the labels as we can't decode them.
-                    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-
-                decoded_preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
-                decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-                decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
-
-                # If we are in a multiprocess environment, the last batch has duplicates
-                if accelerator.num_processes > 1:
-                    if step == len(eval_dataloader) - 1:
-                        decoded_preds = decoded_preds[: len(eval_dataloader.dataset) - samples_seen]
-                        decoded_labels = decoded_labels[: len(eval_dataloader.dataset) - samples_seen]
-                    else:
-                        samples_seen += len(decoded_labels)
-
-                metric.add_batch(predictions=decoded_preds, references=decoded_labels)
-        eval_metric = metric.compute()
-        print({"bleu": eval_metric["score"]})
-
-        if args.with_tracking:
-            accelerator.log(
-                {
-                    "bleu": eval_metric["score"],
-                    "nl_nl_tr_loss": nl_nl_loss.item() / len(data_loaders["nl_nl_tr"]),
-                    "nl_pl_tr_loss": nl_pl_loss.item() / len(data_loaders["nl_pl_tr"]),
-                    "pl_nl_tr_loss": pl_nl_loss.item() / len(data_loaders["pl_nl_tr"]),
-                    "train_loss": total_loss.item() / (len(data_loaders["nl_nl_tr"]) + len(data_loaders["nl_pl_tr"]) + len(data_loaders["pl_nl_tr"])),
+                val_pl_nl_loss = 0.0
+                val_pl_nl_contrast_loss = 0.0
+                
+                total_val_loss = 0.0
+                    
+                samples_seen = 0
+                print("\nDoing Validation run\n")
+                for step, (nl_nl_val_batch, nl_pl_val_batch, pl_nl_val_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
+                    
+                    with torch.no_grad():
+                        
+                        # nl_nl training
+                        nl_nl_val_batch = {k: v.to(accelerator.device) for k, v in nl_nl_val_batch.items()}
+                        outputs = model(**nl_nl_val_batch)
+                        val_loss1 = outputs.loss
+                        val_nl_nl_loss += val_loss1['loss'].detach().float()
+                        val_loss += val_loss1['loss']
+                        if 'contrast_loss' in val_loss1:
+                            val_nl_nl_contrast_loss += val_loss1['contrast_loss'].detach().float()
+                            val_loss += val_loss1['contrast_loss']
+                        
+                        # nl_pl training
+                        nl_pl_val_batch = {k: v.to(accelerator.device) for k, v in nl_pl_val_batch.items()}
+                        outputs = model(**nl_pl_val_batch)
+                        val_loss2 = outputs.loss
+                        val_nl_pl_loss += val_loss2['loss'].detach().float()
+                        val_loss += val_loss2['loss']
+                        if 'contrast_loss' in val_loss2:
+                            val_nl_pl_contrast_loss += val_loss2['contrast_loss'].detach().float()
+                            val_loss += val_loss2['contrast_loss']
+                                    
+                        # pl_nl training
+                        pl_nl_val_batch = {k: v.to(accelerator.device) for k, v in pl_nl_val_batch.items()}
+                        outputs = model(**pl_nl_val_batch)
+                        val_loss3 = outputs.loss
+                        val_pl_nl_loss += val_loss3['loss'].detach().float()
+                        val_loss += val_loss3['loss']
+                        if 'contrast_loss' in val_loss3:
+                            val_pl_nl_contrast_loss += val_loss3['contrast_loss'].detach().float()
+                            val_loss += val_loss3['contrast_loss']
+                        
+                        val_loss = val_loss/3
+                        total_val_loss += val_loss.detach().float()
+                
+                results = {
+                    # "bleu": eval_metric["score"],
                     "epoch": epoch,
                     "step": completed_steps,
-                },
-                step=completed_steps,
-            )
+                    "tr_nl_nl_loss": tr_nl_nl_loss.item() / checkpointing_steps,
+                    "tr_nl_pl_loss": tr_nl_pl_loss.item() / checkpointing_steps,
+                    "tr_pl_nl_loss": tr_pl_nl_loss.item() / checkpointing_steps,
+                    "train_loss": total_loss.item() / checkpointing_steps,
+                    "val_nl_nl_loss": val_nl_nl_loss.item() / len(data_loaders["nl_nl_va"]),
+                    "val_nl_pl_loss": val_nl_pl_loss.item() / len(data_loaders["nl_pl_va"]),
+                    "val_pl_nl_loss": val_pl_nl_loss.item() / len(data_loaders["pl_nl_va"]),
+                    "val_loss": total_val_loss.item() / len(data_loaders["nl_nl_va"]),
+                }
+                model.train()
+                
+                print(f"\n\nResults steps {completed_steps}: \n", flush=True)
+                for key, val in results.items():
+                    print(f"{key}\t{val}", flush=True)
+                print("\n")
+                
+                tr_nl_nl_loss = 0.0
+                tr_nl_nl_contrast_loss = 0.0
+                
+                tr_nl_pl_loss = 0.0  
+                tr_nl_pl_contrast_loss = 0.0
+
+                tr_pl_nl_loss = 0.0
+                tr_pl_nl_contrast_loss = 0.0
+                
+                total_loss = 0.0
+                
+            if completed_steps >= args.max_train_steps:
+                break
 
         if epoch < args.num_train_epochs - 1:
             accelerator.wait_for_everyone()
@@ -356,8 +378,7 @@ def main():
                 output_dir = os.path.join(args.output_dir, output_dir)
             accelerator.save_state(output_dir)
 
-    if args.with_tracking:
-        accelerator.end_training()
+    accelerator.end_training()
 
     if args.output_dir is not None:
         accelerator.wait_for_everyone()

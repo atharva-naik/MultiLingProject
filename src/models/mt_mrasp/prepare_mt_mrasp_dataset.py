@@ -18,7 +18,7 @@ from ..codet5 import (
 )
 
 
-class MTMraspDataset(Dataset):
+class MTLMraspDataset(Dataset):
     
     def __init__(
         self, 
@@ -51,7 +51,7 @@ class MTMraspDataset(Dataset):
                 for key in contrast: model_inputs[f"contrast_{key}"] = contrast[key][0]
             else: model_inputs = data[i]
             self.data.append(model_inputs)
-            self.data = self.data[:1000]
+            # self.data = self.data[:1000]
 
 
     def __len__(self):
@@ -82,8 +82,8 @@ class MTMraspDataset(Dataset):
 def get_mt_mrasp_loaders(args):
     from src.datautils import read_jsonl
     # filt_k_conala = args.conala_topk
-    filt_k_conala = 50000
-    # filt_k_conala = 100
+    # filt_k_conala = 50000
+    filt_k_conala = 10000
     conala_mined_dataset = load_dataset("neulab/conala", "mined", split=f"train[:{filt_k_conala}]")
     conala_code_transforms = read_jsonl("/data/tir/projects/tir3/users/arnaik/conala_transforms.jsonl")
     codegen_data = []
@@ -237,6 +237,11 @@ def get_mt_mrasp_loaders(args):
     cs_train, cs_val = split_data(codesum_data)
     dt_train, dt_val = split_data(doctrans_data)
 
+    expected_train_size = min(len(cg_train), len(cs_train))
+    tmp_val_size = len(dt_train) - expected_train_size
+    tmp_val_ratio = tmp_val_size / len(dt_train)
+    dt_train, _ = split_data(dt_train, tmp_val_ratio)
+
     tasks = ["nl_pl", "pl_nl", "nl_nl"]
     task_to_train_data = {"nl_pl": cg_train, "pl_nl": cs_train, "nl_nl": dt_train}
     task_to_val_data = {"nl_pl": cg_val, "pl_nl": cs_val, "nl_nl": dt_val}
@@ -260,8 +265,8 @@ def get_mt_mrasp_loaders(args):
             print('train-'+subset+f": {round(100*train_dist[subset]/len(train_data), 2)}%")
             print('val-'+subset+f": {round(100*val_dist[subset]/len(val_data), 2)}%")
         print("\n")
-        train_dataset = MTMraspDataset(train_data, tokenizer, eval=False)
-        val_dataset = MTMraspDataset(val_data, tokenizer, eval=True)
+        train_dataset = MTLMraspDataset(train_data, tokenizer, eval=False)
+        val_dataset = MTLMraspDataset(val_data, tokenizer, eval=True)
         trainloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
         valloader = DataLoader(val_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
 
