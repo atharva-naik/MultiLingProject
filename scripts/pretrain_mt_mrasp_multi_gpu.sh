@@ -3,7 +3,7 @@
 #SBATCH --job-name=mt_mrasp_pretraining
 #SBATCH --partition=babel-shared-long
 #SBATCH --time=05-01:00:00
-#SBATCH --gres gpu:A6000:4
+#SBATCH --gres gpu:A6000:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=50G
 #SBATCH --output=./logs/mt_mrasp_single_gpu_conala_to_10k_per_task_50k.log
@@ -22,4 +22,4 @@ accelerate launch --main_process_port 295044 --num_processes 1 -m src.models.tra
 --checkpointing_steps 500 \
 --lr_scheduler_type linear \
 --warmup_ratio 0.05 \
---output_dir ./models/mt_mrasp_single_gpu_conala_to_10k_per_task_50k/ \
+--output_dir ./models/mt_mrasp_single_gpu_conala_to_10k_per_task_50k/

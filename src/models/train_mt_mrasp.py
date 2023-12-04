@@ -72,7 +72,7 @@ def main():
                 batch_data = next(nl_pl_loader)
                 return batch_data, nl_pl_loader
     
-    accelerator = Accelerator()
+    accelerator = Accelerator(gradient_accumulation_steps=args.gradient_accumulation_steps)
 
     # Make one log on every process with the configuration for debugging.
     logging.basicConfig(
@@ -251,16 +251,15 @@ def main():
                 
             total_loss += loss.detach().float()
             loss = loss/3
-            loss = loss / args.gradient_accumulation_steps
+            loss = loss
             accelerator.backward(loss)
             
-            if step % args.gradient_accumulation_steps == 0 or step == len(data_loaders["nl_nl_tr"]) - 1:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
-                optimizer.step()
-                lr_scheduler.step()
-                optimizer.zero_grad()
-                progress_bar.update(1)
-                completed_steps += 1
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            optimizer.step()
+            lr_scheduler.step()
+            optimizer.zero_grad()
+            progress_bar.update(1)
+            completed_steps += 1
             
             if completed_steps % checkpointing_steps == 0:
                 output_dir = f"step_{completed_steps }"
@@ -289,7 +288,6 @@ def main():
                 total_val_loss = 0.0
                     
                 samples_seen = 0
-                accelerator.print("\nDoing Validation run\n")
                 for step, (nl_nl_val_batch, nl_pl_val_batch, pl_nl_val_batch) in enumerate(zip(data_loaders["nl_nl_va"], data_loaders["nl_pl_va"], data_loaders["pl_nl_va"])):
                     val_loss = 0
                     with torch.no_grad():
@@ -326,32 +324,31 @@ def main():
                         
                         total_val_loss += val_loss.detach().float()
                         
-                if accelerator.is_main_process:
-                    results = {
-                        # "bleu": eval_metric["score"],
-                        "epoch": epoch,
-                        "step": completed_steps,
-                        "tr_nl_nl_loss": tr_nl_nl_loss / checkpointing_steps,
-                        "tr_nl_nl_contrast_loss": tr_nl_nl_contrast_loss / checkpointing_steps,
-                        "tr_pl_nl_loss": tr_pl_nl_loss / checkpointing_steps,
-                        "tr_pl_nl_contrast_loss": tr_pl_nl_contrast_loss / checkpointing_steps,
-                        "tr_nl_pl_loss": tr_nl_pl_loss / checkpointing_steps,
-                        "tr_nl_pl_contrast_loss": tr_nl_pl_contrast_loss / checkpointing_steps,
-                        "train_loss": total_loss / (3* checkpointing_steps),
-                        
-                        "val_nl_nl_loss": val_nl_nl_loss / (step+1),
-                        "val_nl_nl_contrast_loss": val_nl_nl_contrast_loss / (step+1),
-                        "val_nl_pl_loss": val_nl_pl_loss / (step+1),
-                        "val_nl_pl_contrast_loss": val_nl_pl_contrast_loss / (step+1),
-                        "val_pl_nl_loss": val_pl_nl_loss / (step+1),
-                        "val_pl_nl_contrast_loss": val_pl_nl_contrast_loss / (step+1),
-                        "val_loss": total_val_loss / (3 *  (step+1)),
-                    }
+                results = {
+                    # "bleu": eval_metric["score"],
+                    "epoch": epoch,
+                    "step": completed_steps,
+                    "tr_nl_nl_loss": tr_nl_nl_loss / checkpointing_steps,
+                    "tr_nl_nl_contrast_loss": tr_nl_nl_contrast_loss / checkpointing_steps,
+                    "tr_pl_nl_loss": tr_pl_nl_loss / checkpointing_steps,
+                    "tr_pl_nl_contrast_loss": tr_pl_nl_contrast_loss / checkpointing_steps,
+                    "tr_nl_pl_loss": tr_nl_pl_loss / checkpointing_steps,
+                    "tr_nl_pl_contrast_loss": tr_nl_pl_contrast_loss / checkpointing_steps,
+                    "train_loss": total_loss / (3* checkpointing_steps),
                     
-                    accelerator.print(f"\n\nResults steps {completed_steps}: \n", flush=True)
-                    for key, val in results.items():
-                        accelerator.print(f"{key}\t{val}", flush=True)
-                    accelerator.print("\n")
+                    "val_nl_nl_loss": val_nl_nl_loss / (step+1),
+                    "val_nl_nl_contrast_loss": val_nl_nl_contrast_loss / (step+1),
+                    "val_nl_pl_loss": val_nl_pl_loss / (step+1),
+                    "val_nl_pl_contrast_loss": val_nl_pl_contrast_loss / (step+1),
+                    "val_pl_nl_loss": val_pl_nl_loss / (step+1),
+                    "val_pl_nl_contrast_loss": val_pl_nl_contrast_loss / (step+1),
+                    "val_loss": total_val_loss / (3 *  (step+1)),
+                }
+                
+                accelerator.print(f"\n\nResults steps {completed_steps}: \n", flush=True)
+                for key, val in results.items():
+                    accelerator.print(f"{key}\t{val}", flush=True)
+                accelerator.print("\n")
                 
                 model.train()
                 
