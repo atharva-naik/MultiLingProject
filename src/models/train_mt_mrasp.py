@@ -193,6 +193,7 @@ def main():
     accelerator.print(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
     accelerator.print(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
     accelerator.print(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
+    accelerator.print(f"  Total warmup steps = {args.max_train_steps*args.warmup_ratio}")
     accelerator.print(f"  Total optimization steps = {args.max_train_steps}")
    
     # Only show the progress bar once on each machine.
