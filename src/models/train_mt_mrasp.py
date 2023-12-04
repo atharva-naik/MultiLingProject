@@ -262,9 +262,9 @@ def main():
             completed_steps += 1
             
             if completed_steps % checkpointing_steps == 0:
-                output_dir = f"step_{completed_steps }"
-                if args.output_dir is not None:
-                    output_dir = os.path.join(args.output_dir, output_dir)
+                output_dir = os.path.join(args.output_dir, f"step_{completed_steps}")
+                if output_dir is not None:
+                    os.makedirs(output_dir, exist_ok=True)
                 
                 accelerator.wait_for_everyone()
                 unwrapped_model = accelerator.unwrap_model(model)
