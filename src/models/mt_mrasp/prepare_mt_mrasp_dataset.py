@@ -234,15 +234,15 @@ def get_mt_mrasp_loaders(args):
         codesum_data += additional_codesum_data
         doctrans_data += additional_doctrans_data
     
-    # while len(codegen_data) > 100000:
-    #     codegen_data, _ = split_data(codegen_data, val_size=0.2)
-    #     codesum_data, _ = split_data(codesum_data, val_size=0.2)
-    #     doctrans_data, _ = split_data(doctrans_data, val_size=0.2)
-
-    while len(codegen_data) > 50000:
+    while len(codegen_data) > 100000:
         codegen_data, _ = split_data(codegen_data, val_size=0.2)
         codesum_data, _ = split_data(codesum_data, val_size=0.2)
         doctrans_data, _ = split_data(doctrans_data, val_size=0.2)
+
+    # while len(codegen_data) > 50000:
+    #     codegen_data, _ = split_data(codegen_data, val_size=0.2)
+    #     codesum_data, _ = split_data(codesum_data, val_size=0.2)
+    #     doctrans_data, _ = split_data(doctrans_data, val_size=0.2)
 
     print(f"{len(codegen_data)} CodeGen instances")
     print(f"{len(codesum_data)} CodeSum instances")
