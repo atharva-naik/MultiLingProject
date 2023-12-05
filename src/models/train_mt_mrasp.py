@@ -269,10 +269,10 @@ def main():
                 accelerator.wait_for_everyone()
                 unwrapped_model = accelerator.unwrap_model(model)
                 unwrapped_model.save_pretrained(
-                    args.output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save
+                    output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save
                 )
                 if accelerator.is_main_process:
-                    tokenizer.save_pretrained(args.output_dir)
+                    tokenizer.save_pretrained(output_dir)
 
                 model.eval()
 
